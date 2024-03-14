@@ -108,25 +108,23 @@ def prompt_import_product(prompt_initial): #Je modifie le prompt initial pour qu
     prompt_for_import_product = prompt_for_import_product.replace("í", "i")
     prompt_for_import_product = prompt_for_import_product.replace("ï", "i")
     prompt_for_import_product = prompt_for_import_product.replace("---", "-")
+    prompt_for_import_product = prompt_for_import_product.replace("--", "-")
     
     prompt_for_import_product = prompt_for_import_product + ".png"
     return prompt_for_import_product
 
 def create_short_winner(winner): #Diminuer le nombre de caractères afin d'avoir une cohérence visuelle sur la page d'achat des cartes (4 gagnants fait que le titre est trop long et ça décale tout)
     LONGUEUR_TITRE_WORDPRESS = 18
-    
     if len(winner) > LONGUEUR_TITRE_WORDPRESS :
         short_winner = winner.split()
         short_winner = short_winner[:4]
         short_winner = " ".join(short_winner)
-        
         if len(short_winner) > LONGUEUR_TITRE_WORDPRESS :
             short_winner = short_winner[:LONGUEUR_TITRE_WORDPRESS] + "..."
         else:
             pass
     else:
         short_winner = winner
-    
     return short_winner
 
 def recent_winner_prompt(date_event, date_dernier_scrapping, prompt_initial, midjourney_parameters, EVENT_COUNTER): #Identification gagnant depuis le dernier scrapping
@@ -149,28 +147,31 @@ EVENT_COUNTER = 0
 SEUIL_CORRESPONDANCE = 20
 
 #----------------------LISTES----------------------#
-one_winner_one_line_list = [] #Liste contenant toutes les infos pour chaque event (OWOL)
-urls_event = [] #Permet d'avoir les url si compet' hommes/femmes et/ou mixte
-winner_and_date_event = [] #utilisé pour vérifier si 1 winner n'a pas gagné 2 events le même jour (cf def winner_eventdate_concordance(winner,date_event))
-events_ok_list = [] #Liste des events passés par les différents tamis
-data_for_wordpress_list = []
-competition_of_sport_list = [] #De manière bête et méchante je vais ajouter dans cette liste {competition} of {sport}
-competition_of_sport_traduction = [] #J'ai ici la traduction de la liste précédente pour que la traduction soit la plus exacte possible
-month_fr_list = []
-month_eng_list = []
+one_winner_one_line_list = [] #Liste contenant toutes les infos pour chaque event (OWOL) => Utilisée pour créer l'Excel
+data_for_wordpress_list = [] #Liste de toutes les infos pour l'import Product sur WP
 
-#Je vérifie avec les 2 éléments ci-dessous si je n'ai pas plusieurs fois le même n° pour des events différents (soucis pour les diapos si c'est le cas)
-event_number_list = []
+#----------------------LISTES LIEES A DE LA VERIFICATIONS----------------------#
+winner_and_date_event = [] #utilisé pour vérifier si 1 winner n'a pas gagné 2 events le même jour (cf def winner_eventdate_concordance(winner,date_event))
+
+events_ok_list = [] #Liste des events passés par les différents tamis
+
+event_number_list = [] #Plusieurs fois le même numéro d'event ?
 occurence_event_number = {}
 
-#Série de listes avec toutes les erreurs possibles afin de les regrouper et simplifier la lecture en fin de scrapping
+
+#----------------------LISTES TRADUCTIONS FR EN----------------------#
+competition_of_sport_list = [] #De manière bête et méchante je vais ajouter dans cette liste {competition} of {sport}
+competition_of_sport_traduction = [] #J'ai ici la traduction de la liste précédente pour que la traduction soit la plus exacte possible
+
+month_fr_list = [] #Traduction du mois afin de faciliter la création des tags produit pour WP
+month_eng_list = []
+
+#----------------------LISTES POUR LE PRINT FINAL----------------------#
 no_city_list = []
 no_winner_identified_list  = []
 no_competition_of_sport_translation_list = []
 no_event_translation_list = []
 just_men_or_women_list = []
-
-#Identification gagnant depuis le dernier scrapping et création automatique du prompt pour créer les cartes
 recents_winners_prompt_list = []
 
 
@@ -395,9 +396,9 @@ if result.status_code == 200:
                             url_event_hommes = sport_event_link_text
                             url_event_femmes = ""
                             url_event_mixte = ""
-                        urls_event = [url_event_hommes, url_event_femmes, url_event_mixte]
+                        urls_event_list = [url_event_hommes, url_event_femmes, url_event_mixte]
                         
-                        for url_event in urls_event :
+                        for url_event in urls_event_list :
                             if url_event != None and url_event != "" :
                                 event_detail = requests.get(url_event)
 

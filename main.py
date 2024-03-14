@@ -138,13 +138,22 @@ def recent_winner_prompt(date_event, date_dernier_scrapping, prompt_initial, mid
 actual_year = str(datetime.now().year)
 actual_day = str(datetime.now().day)
 url = "https://www.les-sports.info/calendrier-sport-2024-p0-62024.html"
-nom_feuille = "Data"
-nom_feuille_eng = "Data eng"
-date_event = "Month 1st"
 midjourney_parameters = ",oil painting style, colorful lighting,--ar 1:1 --c 100 --s 965 --v 5.1"
 COMPETITION_COUNTER = 0
 EVENT_COUNTER = 0
 SEUIL_CORRESPONDANCE = 20
+
+nom_sport_sheet = "SPORT"
+nom_competition_sheet = "COMPETITION"
+nom_event_sheet = "EVENT"
+nom_ignore_event_sheet = "IGNORE EVENT"
+nom_country_sheet = "COUNTRY"
+nom_city_sheet = "CITY"
+nom_date_sheet = "DATE"
+nom_abreviation_sheet = "ABREVIATION"
+nom_comp_of_sport_sheet = "COMP OF SPORT"
+nom_month_sheet = "MONTH"
+nom_twitter_sheet = "TWITTER"
 
 #----------------------LISTES----------------------#
 one_winner_one_line_list = [] #Liste contenant toutes les infos pour chaque event (OWOL) => Utilisée pour créer l'Excel
@@ -157,7 +166,6 @@ events_ok_list = [] #Liste des events passés par les différents tamis
 
 event_number_list = [] #Plusieurs fois le même numéro d'event ?
 occurence_event_number = {}
-
 
 #----------------------LISTES TRADUCTIONS FR EN----------------------#
 competition_of_sport_list = [] #De manière bête et méchante je vais ajouter dans cette liste {competition} of {sport}
@@ -177,91 +185,94 @@ recents_winners_prompt_list = []
 
 #----------------------VERIFS EXCEL----------------------#
 #1 - Est-ce que le fichier Excel existe ?
-nom_fichier = f'/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/2024/{scrapping_month}/EXCEL/DATAS.xlsx'
+nom_fichier = f'/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/2024/{scrapping_month}/EXCEL/DATAS_2.xlsx'
 try:
     classeur_exist = openpyxl.load_workbook(nom_fichier)
     feuille_exist = classeur_exist.active
 except FileNotFoundError:
     classeur_exist = None
+    
+    
+#Je charge l'Excel
+classeur = openpyxl.load_workbook(nom_fichier)  
+
+#Ajouts du nom des feuilles Excel suite au changement d'organisation de l'Excel
+sport_sheet = classeur["SPORT"]
+competition_sheet = classeur["COMPETITION"]
+event_sheet = classeur["EVENT"]
+ignore_event_sheet = classeur["IGNORE EVENT"]
+country_sheet = classeur["COUNTRY"]
+city_sheet = classeur["CITY"]
+date_sheet = classeur["DATE"]
+abreviation_sheet = classeur["ABREVIATION"]
+comp_of_sport_sheet = classeur["COMP OF SPORT"]
+month_sheet = classeur["MONTH"]
+twitter_sheet = classeur["TWITTER"]
+    
+
 
 #----------------------SPORTS EN ENTREE----------------------#
-#2 - Je charge l'Excel puis créé 2 listes contenant les valeurs présentes dans les 2 feuilles de Data
-try:
-    classeur = openpyxl.load_workbook(nom_fichier)
-    feuille_data = classeur[nom_feuille]
-    feuille_data_eng = classeur[nom_feuille_eng]
+# Je créé deux listes plus spécifiques contenant les éléments de la colonne A (en FR) et B (en ANG)
+FR_Sports = [cell.value for cell in sport_sheet['A'] if cell.value is not None]
+EN_Sports = [cell.value for cell in sport_sheet['B'] if cell.value is not None]
 
-    # Je créé une liste plus spécifique contenant les éléments de la colonne A
-    Sports = [cell.value for cell in feuille_data['A'] if cell.value is not None]
-    Eng_Sports = [str(cell.value).strip() for cell in feuille_data_eng['A'] if cell.value is not None]
-
-except FileNotFoundError:
-    print(f"Le fichier {nom_fichier} n'a pas été trouvé.")
-except KeyError:
-    print(f"La feuille {nom_feuille} n'a pas été trouvée dans le fichier {nom_fichier}.")
-
-#3 - Si ça a fonctionné sans erreur ci-dessus c'est que l'Excel existe et les feuilles aussi.
-#Je peux donc créer des listes spécifiques pour chacune des colonnes présentes dans mes feuilles de Data
-#Pourquoi je fais ça ? Les données présentes dans Data vont me permettre d'uniformiser les données en sortie en fonction de ce que je vais trouver dans les données de mon scrapping. Ex : "cyclo-cross" et "Cyclo cross" deviendront "Cyclo-cross"
-  
 #----------------------COMPETITIONS EN ENTREE----------------------#
-# Créer la liste avec les éléments de la colonne B
-Competitions = [cell.value for cell in feuille_data['B'] if cell.value is not None]
-Eng_Competitions = [cell.value for cell in feuille_data_eng['B'] if cell.value is not None]
+# Je créé deux listes plus spécifiques contenant les éléments de la colonne A (en FR) et B (en ANG)
+FR_Competition = [cell.value for cell in competition_sheet['A'] if cell.value is not None]
+EN_Competition = [cell.value for cell in competition_sheet['B'] if cell.value is not None]
 
-#----------------------EPREUVES EN ENTREE----------------------#
-# Créer la liste avec les éléments de la colonne C
-Events = [cell.value for cell in feuille_data['C'] if cell.value is not None]
-Eng_Events = [cell.value for cell in feuille_data_eng['C'] if cell.value is not None]
+#----------------------EVENT EN ENTREE----------------------#
+# Je créé deux listes plus spécifiques contenant les éléments de la colonne A (en FR) et B (en ANG)
+FR_Event = [cell.value for cell in event_sheet['A'] if cell.value is not None]
+EN_Event = [cell.value for cell in event_sheet['B'] if cell.value is not None]
 
 #----------------------PAYS EN ENTREE----------------------#
-# Créer la liste avec les éléments de la colonne D
-Countries = [cell.value for cell in feuille_data['D'] if cell.value is not None]
-Eng_Countries = [cell.value for cell in feuille_data_eng['D'] if cell.value is not None]
+# Je créé deux listes plus spécifiques contenant les éléments de la colonne A (en FR) et B (en ANG)
+FR_Country = [cell.value for cell in country_sheet['A'] if cell.value is not None]
+EN_Country = [cell.value for cell in country_sheet['B'] if cell.value is not None]
 
 #----------------------VILLES EN ENTREE----------------------#
-# Créer la liste avec les éléments de la colonne E
-Cities_list = [cell.value for cell in feuille_data['E'] if cell.value is not None]
-Eng_Cities_list = [cell.value for cell in feuille_data_eng['E'] if cell.value is not None]
-    
+# Je créé deux listes plus spécifiques contenant les éléments de la colonne A (en FR) et B (en ANG)
+FR_City = [cell.value for cell in city_sheet['A'] if cell.value is not None]
+EN_City = [cell.value for cell in city_sheet['B'] if cell.value is not None]
+
 #----------------------DATES EN ENTREE----------------------#
-# Créer la liste avec les éléments de la colonne F
-Dates = [cell.value for cell in feuille_data['F'] if cell.value is not None]
-Eng_Dates = [cell.value for cell in feuille_data_eng['F'] if cell.value is not None]
+# Je créé deux listes plus spécifiques contenant les éléments de la colonne A (en FR) et B (en ANG)
+FR_Date = [cell.value for cell in date_sheet['A'] if cell.value is not None]
+EN_Date = [cell.value for cell in date_sheet['B'] if cell.value is not None]
 
 #----------------------ABREVIATIONS EN ENTREE----------------------#
-# Créer la liste avec les éléments de la colonne H (I pour l'ensemble)
-Abr = [cell.value for cell in feuille_data['H'] if cell.value is not None]
-Eng_Abr = [cell.value for cell in feuille_data_eng['H'] if cell.value is not None]
-All_Abr = [cell.value for cell in feuille_data_eng['I'] if cell.value is not None]
+# Je créé deux listes plus spécifiques contenant les éléments de la colonne A (en FR) et B (en ANG)
+FR_Abreviation = [cell.value for cell in abreviation_sheet['A'] if cell.value is not None]
+EN_Abreviation = [cell.value for cell in abreviation_sheet['B'] if cell.value is not None]
+ISO3_Abreviation = [cell.value for cell in abreviation_sheet['C'] if cell.value is not None]
 
-#----------------------COMPETITIONS A IGNORER EN ENTREE----------------------#
-# Créer la liste avec les éléments de la colonne G
-Ignore_Competitions = [cell.value for cell in feuille_data['G'] if cell.value is not None]
+#----------------------EVENTS IGNORES EN ENTREE----------------------#
+# Je créé deux listes plus spécifiques contenant les éléments de la colonne A (en FR) et B (en ANG)
+FR_Ignore_event = [cell.value for cell in ignore_event_sheet['A'] if cell.value is not None]
 
-
-#--------------MISE EN PLACE DE LA TRADUCTION COMPETITION OF SPORT EN TRADUCTION PLUS EXACTE--------------#
-#Je récupère toutes les valeurs présentes dans la colonne J de la feuille Data eng(competition + sport)
-for cell in feuille_data_eng['J'][1:]:
+#----------------------COMPETITION OF SPORT EN ENTREE----------------------#
+#Je récupère toutes les valeurs présentes dans la feuille
+for cell in comp_of_sport_sheet['A'][1:]:
     # Vérifier si la cellule n'est pas vide et ajouter sa valeur à la liste
     if cell.value is not None:
         competition_of_sport_list.append(cell.value)
 
 #Je récupère toutes les valeurs présentes dans la colonne K (competition + sport)
-for cell in feuille_data_eng['K'][1:]:
+for cell in comp_of_sport_sheet['B'][1:]:
     # Vérifier si la cellule n'est pas vide et ajouter sa valeur à la liste
     if cell.value is not None:
         competition_of_sport_traduction.append(cell.value)
         
-#--------------MISE EN PLACE DE LA TRADUCTION DES MOIS--------------#      
-#Je récupère toutes les valeurs présentes dans la colonne M de la feuille Data eng
-for cell in feuille_data_eng['M'][1:]:
+#----------------------MOIS EN ENTREE----------------------#
+#Je récupère toutes les valeurs présentes dans la colonne A
+for cell in month_sheet['A'][1:]:
     # Vérifier si la cellule n'est pas vide et ajouter sa valeur à la liste
     if cell.value is not None:
         month_fr_list.append(cell.value)
         
-#Je récupère toutes les valeurs présentes dans la colonne N de la feuille Data eng
-for cell in feuille_data_eng['N'][1:]:
+#Je récupère toutes les valeurs présentes dans la colonne B
+for cell in month_sheet['B'][1:]:
     # Vérifier si la cellule n'est pas vide et ajouter sa valeur à la liste
     if cell.value is not None:
         month_eng_list.append(cell.value)
@@ -311,30 +322,30 @@ if result.status_code == 200:
                         # On va chercher un pays précis
                         if competition_country is not None:
                             competition_country = competition_country.lower()
-                            Good_country = next((Country for Country in Countries if Country.lower() in competition_country.lower()), "/")
+                            Good_country = next((Country for Country in FR_City if Country.lower() in competition_country.lower()), "/")
                             
-                            if Good_country in Countries:
+                            if Good_country in FR_City:
                                 Good_country_fr = Good_country
-                                index_pays = Countries.index(Good_country)
-                                Good_country_eng = Eng_Countries[index_pays]
+                                index_pays = FR_City.index(Good_country)
+                                Good_country_eng = EN_City[index_pays]
                                 competition_country = Good_country_eng
 
                         # On va chercher une ville précise
                         if city_first_chance is not None and city_second_chance is not None :
                             
-                            City_first_chance_match = [City_in_list for City_in_list in Cities_list if City_in_list.lower() in city_first_chance.lower()]
-                            City_second_chance_match = [City_in_list for City_in_list in Cities_list if City_in_list.lower() in city_second_chance.lower()]
+                            City_first_chance_match = [City_in_list for City_in_list in FR_City if City_in_list.lower() in city_first_chance.lower()]
+                            City_second_chance_match = [City_in_list for City_in_list in FR_City if City_in_list.lower() in city_second_chance.lower()]
                             
                             if City_first_chance_match :
                                 Good_city = max(City_first_chance_match, key=len)
-                                if Good_city in Cities_list:
-                                    index_city = Cities_list.index(Good_city)
-                                    city = Eng_Cities_list[index_city]
+                                if Good_city in FR_City:
+                                    index_city = FR_City.index(Good_city)
+                                    city = EN_City[index_city]
                             elif City_second_chance_match :
                                 Good_city = max(City_second_chance_match, key=len)
-                                if Good_city in Cities_list:
-                                    index_city = Cities_list.index(Good_city)
-                                    city = Eng_Cities_list[index_city]
+                                if Good_city in FR_City:
+                                    index_city = FR_City.index(Good_city)
+                                    city = EN_City[index_city]
                             else:
                                 city = ""
                                 no_city_list.append(f"{city_first_chance} ou {city_second_chance}")
@@ -346,13 +357,13 @@ if result.status_code == 200:
                         # On va chercher un sport précis
                         if sport is not None:
                             sport = sport.lower()
-                            sport_matches = [Sport for Sport in Sports if Sport.lower() in sport.lower()]
+                            sport_matches = [Sport for Sport in FR_Sports if Sport.lower() in sport.lower()]
                             if sport_matches:
                                 Good_sport = max(sport_matches, key=len)
                                 
-                                if Good_sport in Sports:
-                                    index_sport = Sports.index(Good_sport)
-                                    Good_sport_eng = Eng_Sports[index_sport]
+                                if Good_sport in FR_Sports:
+                                    index_sport = FR_Sports.index(Good_sport)
+                                    Good_sport_eng = EN_Sports[index_sport]
                                     sport = Good_sport_eng
                             else:
                                 sport = f'{sport} A AJOUTER !! - {url_event}'
@@ -360,13 +371,13 @@ if result.status_code == 200:
                         # On va chercher une compétition précise
                         if sport_competition is not None:
                             sport_competition = sport_competition.lower()
-                            competition_matches = [Competition for Competition in Competitions if Competition.lower() in sport_competition.lower()]
+                            competition_matches = [Competition for Competition in FR_Competition if Competition.lower() in sport_competition.lower()]
                             if competition_matches:
                                 Good_competition = max(competition_matches, key=len)
                                 
-                                if Good_competition in Competitions:
-                                    index_competition = Competitions.index(Good_competition)
-                                    Good_competition_eng = Eng_Competitions[index_competition]
+                                if Good_competition in FR_Competition:
+                                    index_competition = FR_Competition.index(Good_competition)
+                                    Good_competition_eng = EN_Competition[index_competition]
                                     sport_competition = Good_competition_eng
                                 
                             else:
@@ -424,7 +435,7 @@ if result.status_code == 200:
                                     for event_in_page in all_events_in_page :
                                         if event_in_page is not None : #les 3 tris autont lieu pour tous les éléments qui passent ce if
                                             event_in_page_text = event_in_page.text
-                                            if [Ignore_Competition for Ignore_Competition in Ignore_Competitions if Ignore_Competition.lower() in event_in_page_text.lower()]:
+                                            if [Ignore_Competition for Ignore_Competition in FR_Ignore_event if Ignore_Competition.lower() in event_in_page_text.lower()]:
                                                 #print(f"J'ignore {event_in_page_text} car épreuve dans la liste noire")
                                                 pass
                                             else:
@@ -463,13 +474,13 @@ if result.status_code == 200:
                                     for specific_event_title_index, specific_event_title in enumerate(events_ok_list,start=1):
 
                     #---------------1ère traduction : Je vais traduire chaque event. BDD des events dans l'Excel (feuille Data, cf #3 en dfébut de code)
-                                        event_matches = [Event for Event in Events if Event.lower() in specific_event_title.lower()]
+                                        event_matches = [Event for Event in FR_Event if Event.lower() in specific_event_title.lower()]
                                         
                                         if event_matches: #Si l'épreuve fait partie de la liste des events en français
                                             Good_event = max(event_matches, key=len) #Je prends la plus longue correspondance s'il y en a plusieurs
                                             sport_event = Good_event
-                                            index_event = Events.index(sport_event)
-                                            Good_event_eng = Eng_Events[index_event] #ATTENTION il faut 1 valeur dans chaque case sinon tout se décale
+                                            index_event = FR_Event.index(sport_event)
+                                            Good_event_eng = EN_Event[index_event] #ATTENTION il faut 1 valeur dans chaque case sinon tout se décale
                                             if len(Good_event) == 2: #Je passe ici si la seule correspondance concerne le sexe du compétiteur
                                                 just_men_or_women_list.append(f'{specific_event_title} - {url_event}"')
                                                 #print(f'ATTENTION ! - "{specific_event_title}" devient "{Good_event_eng} - {url_event}"') #Soit l'event ne contient que Hommes/Femmes soit il contient aussi un event non présent dans la traduction. LAISSER LE PRINT ACTIF !! 
@@ -481,13 +492,13 @@ if result.status_code == 200:
                                             
                                             
                     #---------------2ème traduction : Je vais traduire chaque date d'event. BDD des dates dans l'Excel (feuille Data, cf #3 en dfébut de code)
-                                        date_matches = [Date for Date in Dates if Date.lower() in specific_event_title.lower()]
+                                        date_matches = [Date for Date in FR_Date if Date.lower() in specific_event_title.lower()]
                                         
                                         if date_matches:
                                             Good_date = max(date_matches, key=len)
                                             date_event = Good_date
-                                            index_date = Dates.index(date_event)
-                                            Good_date_eng = Eng_Dates[index_date]
+                                            index_date = FR_Date.index(date_event)
+                                            Good_date_eng = EN_Date[index_date]
                                             date_event = Good_date_eng
                                         else:
                                             print(f'Ligne {EVENT_COUNTER+1} : Soucis de date pour {sport_event} - {url_event}')
@@ -507,9 +518,9 @@ if result.status_code == 200:
                                             winning_team_name = winning_team_info['title'] if winning_team_info is not None else None
                                             
                 #-------------------Le site de scrapping est en Français. Je vais traduire chaque pays de FR à ANG
-                                            if winning_team_name in Countries: #Si Pays dans la liste, je chope la traduction en anglais
-                                                index_country = Countries.index(winning_team_name)
-                                                Good_country_eng = Eng_Countries[index_country]
+                                            if winning_team_name in FR_Country: #Si Pays dans la liste, je chope la traduction en anglais
+                                                index_country = FR_Country.index(winning_team_name)
+                                                Good_country_eng = EN_Country[index_country]
                                                 winning_team_name = Good_country_eng
                                                 
                                                 #Je prépare les variables pour le dictionnaire
@@ -536,7 +547,6 @@ if result.status_code == 200:
                                                 prompt_initial = f'{winner} wins the {sport_competition} {actual_year} of {sport} in {competition_country}'
                                                 winner_eventdate_concordance(winner,date_event)
                                                 one_winner_one_line['Prompt'] = prompt_initial
-                                                #print(f"MANQUE TRADUCTION COMPETITION OF SPORT : {sport_competition} of {sport} - {url_event}")
                                                 no_competition_of_sport_translation_list.append(f'{sport_competition} of {sport} - {url_event}')
                                                 event_number_list.append(EVENT_COUNTER)
                                             
@@ -576,24 +586,24 @@ if result.status_code == 200:
                                             specific_event_title = event_in_page.text
                                             
                     #-----------------------Obligé pour le moment de re-traduire. A voir comment optimiser plus tard
-                                            event_matches = [Event for Event in Events if Event.lower() in specific_event_title.lower()]
+                                            event_matches = [Event for Event in FR_Event if Event.lower() in specific_event_title.lower()]
                                         
                                             if event_matches: #Si l'épreuve fait partie de la liste des events en français
                                                 Good_event = max(event_matches, key=len) #Je prends la plus longue correspondance s'il y en a plusieurs
                                                 sport_event = Good_event
-                                                index_event = Events.index(sport_event)
-                                                Good_event_eng = Eng_Events[index_event] #ATTENTION il faut 1 valeur dans chaque case sinon tout se décale
+                                                index_event = FR_Event.index(sport_event)
+                                                Good_event_eng = EN_Event[index_event] #ATTENTION il faut 1 valeur dans chaque case sinon tout se décale
                                                 sport_event = Good_event_eng
                     #-----------------------Optimiser cette partie du code
                     
                    #-----------------------Idem pour la date. A voir comment optimiser plus tard
-                                            date_matches = [Date for Date in Dates if Date.lower() in specific_event_title.lower()]
+                                            date_matches = [Date for Date in FR_Date if Date.lower() in specific_event_title.lower()]
                                             
                                             if date_matches:
                                                 Good_date = max(date_matches, key=len)
                                                 date_event = Good_date
-                                                index_date = Dates.index(date_event)
-                                                Good_date_eng = Eng_Dates[index_date]
+                                                index_date = FR_Date.index(date_event)
+                                                Good_date_eng = EN_Date[index_date]
                                                 date_event = Good_date_eng
                                             else:
                                                 print(f'Ligne {EVENT_COUNTER+1} : Soucis de date pour {sport_event} - {url_event}')
@@ -643,12 +653,12 @@ if result.status_code == 200:
                                                         
                                                         #On va traduire le pays pour qu'il corresponde à la norme ISO 3 et ainsi obtenir un prompt propre et uniformisé
                                                         #url source : https://www.trucsweb.com/tutoriels/internet/iso_3166/
-                                                        if winner_country in All_Abr: #Si l'abréviation répond déjà à ISO 3
+                                                        if winner_country in ISO3_Abreviation: #Si l'abréviation répond déjà à ISO 3
                                                             winner_country_info = True
                                                             pass
-                                                        elif winner_country in Abr: #Si l'abréviation est présente en Français, on choisit sa traduction en ISO 3
-                                                            index_Abr = Abr.index(winner_country)
-                                                            Abr_eng = Eng_Abr[index_Abr]
+                                                        elif winner_country in FR_Abreviation: #Si l'abréviation est présente en Français, on choisit sa traduction en ISO 3
+                                                            index_Abr = FR_Abreviation.index(winner_country)
+                                                            Abr_eng = EN_Abreviation[index_Abr]
                                                             winner_country = Abr_eng
                                                             winner_country_info = True
                                                         else:
@@ -666,9 +676,10 @@ if result.status_code == 200:
                                                     one_winner_one_line = dictionary.add_to_dictionnary(EVENT_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event)
                                                     
                                                     if winner_country_info :
+                                                        sport = sport.strip() #Mis suite à un soucis rencontré pour un sport qui comportait des espaces à la fin
+                                                        competition_of_sport = f"{sport_competition} of {sport}"
+                                                        
                                                         if city == "": #Le prompt varie en fonction de si j'ai identifié une ville ou non
-                                                            
-                                                            competition_of_sport = f"{sport_competition} of {sport}"
                                                             if competition_of_sport in competition_of_sport_list:
                                                                 j = competition_of_sport_list.index(competition_of_sport)
                                                                 competition_of_sport_traduction_value = competition_of_sport_traduction[j]
@@ -680,7 +691,7 @@ if result.status_code == 200:
                                                                 prompt_initial = f'{winner} ({winner_country}) wins the {sport_event} {sport_competition} of {sport} in {competition_country} on {date_event}'
                                                                 winner_eventdate_concordance(winner,date_event)
                                                                 one_winner_one_line['Prompt'] = prompt_initial
-                                                                print(f"MANQUE TRADUCTION COMPETITION OF SPORT : {sport_competition} of {sport} - {url_event}")
+                                                                no_competition_of_sport_translation_list.append(f'{sport_competition} of {sport} - {url_event}')
                                                                 event_number_list.append(EVENT_COUNTER)
                                                             
                                                             #Modification de la variable pour le prompt Midjourney
@@ -697,7 +708,6 @@ if result.status_code == 200:
                                                             data_for_wordpress_list.append(data_for_wordpress)
                                                             
                                                         else:
-                                                            competition_of_sport = f"{sport_competition} of {sport}"
                                                             if competition_of_sport in competition_of_sport_list:
                                                                 j = competition_of_sport_list.index(competition_of_sport)
                                                                 competition_of_sport_traduction_value = competition_of_sport_traduction[j]
@@ -709,7 +719,8 @@ if result.status_code == 200:
                                                                 prompt_initial = f'{winner} ({winner_country}) wins the {sport_event} {sport_competition} of {sport} in {city}, {competition_country} on {date_event}'
                                                                 winner_eventdate_concordance(winner,date_event)
                                                                 one_winner_one_line['Prompt'] = prompt_initial
-                                                                print(f"MANQUE TRADUCTION COMPETITION OF SPORT : {sport_competition} of {sport} - {url_event}")
+                                                                
+                                                                no_competition_of_sport_translation_list.append(f'{sport_competition} of {sport} - {url_event}')
                                                                 event_number_list.append(EVENT_COUNTER)
 
                                                             #Modification de la variable pour le prompt Midjourney
@@ -742,7 +753,8 @@ if result.status_code == 200:
                                                                 prompt_initial = f'{winner} wins the {sport_event} {sport_competition} of {sport} in {competition_country} on {date_event}'
                                                                 winner_eventdate_concordance(winner,date_event)
                                                                 one_winner_one_line['Prompt'] = prompt_initial
-                                                                print(f"MANQUE TRADUCTION COMPETITION OF SPORT : {sport_competition} of {sport} - {url_event}")
+                                                                
+                                                                no_competition_of_sport_translation_list.append(f'{sport_competition} of {sport} - {url_event}')
                                                                 event_number_list.append(EVENT_COUNTER)
 
                                                             
@@ -772,7 +784,8 @@ if result.status_code == 200:
                                                                 prompt_initial = f'{winner} wins the {sport_event} {sport_competition} of {sport} in {city}, {competition_country} on {date_event}'
                                                                 winner_eventdate_concordance(winner,date_event)
                                                                 one_winner_one_line['Prompt'] = prompt_initial
-                                                                print(f"MANQUE TRADUCTION COMPETITION OF SPORT : {sport_competition} of {sport} - {url_event}")
+                                                                
+                                                                no_competition_of_sport_translation_list.append(f'{sport_competition} of {sport} - {url_event}')
                                                                 event_number_list.append(EVENT_COUNTER)
 
                                                             

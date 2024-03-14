@@ -10,11 +10,13 @@ import dictionary
 import re
 
 #Seule variable à changer, mois à scrapper en français
-scrapping_month = 'Mars'
+scrapping_month = 'Février'
 actual_day = int(datetime.now().day)
-verif_date_event = actual_day-1
+verif_date_event = actual_day-13
 jours_depuis_dernier_scrapping = 1 #Mettre 1 si scrapping fait hier, ...
 date_dernier_scrapping = actual_day - jours_depuis_dernier_scrapping
+date_event = "March 1st"
+
 
 #-------------------------------PREREQUIS-------------------------------#
 #Copier/coller le dossier "Mois_a_copier" et le nommer avec le mois en cours
@@ -52,7 +54,6 @@ date_dernier_scrapping = actual_day - jours_depuis_dernier_scrapping
 #-------------------------------CREATION DES IMAGES FINALES-------------------------------#
 #Exporter toutes les slides en .png dans le dossier "PNG_DIAPO"
 #Lancer ren_second_rename.py qui va transformer le nom "Diapositive1" en Prompt présents dans l'excel
-
 
 
 #------------------------------------------------------------------------------------------------------------------------------------#
@@ -128,10 +129,11 @@ def create_short_winner(winner): #Diminuer le nombre de caractères afin d'avoir
     return short_winner
 
 def recent_winner_prompt(date_event, date_dernier_scrapping, prompt_initial, midjourney_parameters, EVENT_COUNTER): #Identification gagnant depuis le dernier scrapping
-    date_number = re.search(r'\d+', date_event)
-    date_number_int = int(date_number.group())
-    if date_number_int >= date_dernier_scrapping :
-        recents_winners_prompt_list.append(f"{EVENT_COUNTER} - {prompt_initial} {midjourney_parameters}")
+    if date_event:
+        date_number = re.search(r'\d+', date_event)
+        date_number_int = int(date_number.group())
+        if date_number_int >= date_dernier_scrapping :
+            recents_winners_prompt_list.append(f"{EVENT_COUNTER} - {prompt_initial} {midjourney_parameters}")
 
 #----------------------VARIABLES INITIALES----------------------#
 
@@ -185,7 +187,7 @@ recents_winners_prompt_list = []
 
 #----------------------VERIFS EXCEL----------------------#
 #1 - Est-ce que le fichier Excel existe ?
-nom_fichier = f'/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/2024/{scrapping_month}/EXCEL/DATAS_2.xlsx'
+nom_fichier = f'/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/2024/{scrapping_month}/EXCEL/DATAS 2.xlsx'
 try:
     classeur_exist = openpyxl.load_workbook(nom_fichier)
     feuille_exist = classeur_exist.active
@@ -510,62 +512,56 @@ if result.status_code == 200:
     #----------------------------------------------------------------------------------------BOUCLE1---------------------------------------------------------------------------------
     #-------------------------------------------------------------------------------Vainqueur = Equipe nationale---------------------------------------------------------------------
                                     #Spécifique pour les compétitions nationales par équipe
-                                    #Exemple url pour test = https://www.les-sports.info/handball-championnats-d-europe-hommes-2024-epr130056.html
-                                    #ATTENTION : Cet url est mise APRES l'identification de la compétition
                                     for winning_team in team_competition:
                                         if winning_team is not None:
                                             winning_team_info = winning_team.find(class_='nodecort')
                                             winning_team_name = winning_team_info['title'] if winning_team_info is not None else None
                                             
                 #-------------------Le site de scrapping est en Français. Je vais traduire chaque pays de FR à ANG
-                                            if winning_team_name in FR_Country: #Si Pays dans la liste, je chope la traduction en anglais
+                                            if winning_team_name in FR_Country:
+                                                EVENT_COUNTER +=1
                                                 index_country = FR_Country.index(winning_team_name)
                                                 Good_country_eng = EN_Country[index_country]
                                                 winning_team_name = Good_country_eng
-                                                
-                                                #Je prépare les variables pour le dictionnaire
-                                                sport_event = "" #Pas d'event particulier, l'équipe gagne la compétition en elle-même
-                                                winner = winning_team_name
-                                                date_event = "" #Avoir la date de la finale ne m'intéresse pas vu que l'équipe gagne une compétition de plusieurs jours
-                                                winner_country = "/"
-                                                city = ""
-                                                EVENT_COUNTER +=1
-                                                one_winner_one_line = dictionary.add_to_dictionnary(EVENT_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event)
                                             else:
                                                 winning_team_name = f'Pays à ajouter dans la liste : {winning_team_name}'
-                                            
-                                            
+                                                
+                                            winner = winning_team_name
+
+                                            #Je vérifie si j'ai une bonne traduction pour le Prompt au niveau du competition of sport
+                                            #J'en ressort le prompt_initial
+                                            sport = sport.strip()
                                             competition_of_sport = f"{sport_competition} of {sport}"
                                             if competition_of_sport in competition_of_sport_list:
                                                 j = competition_of_sport_list.index(competition_of_sport)
                                                 competition_of_sport_traduction_value = competition_of_sport_traduction[j]
                                                 prompt_initial = f'{winner} wins the {competition_of_sport_traduction_value} in {competition_country}'
                                                 winner_eventdate_concordance(winner,date_event)
-                                                one_winner_one_line['Prompt'] = prompt_initial
                                                 event_number_list.append(EVENT_COUNTER)
                                             else:
-                                                prompt_initial = f'{winner} wins the {sport_competition} {actual_year} of {sport} in {competition_country}'
-                                                winner_eventdate_concordance(winner,date_event)
-                                                one_winner_one_line['Prompt'] = prompt_initial
-                                                no_competition_of_sport_translation_list.append(f'{sport_competition} of {sport} - {url_event}')
-                                                event_number_list.append(EVENT_COUNTER)
+                                                prompt_initial = ''
+                                                no_competition_of_sport_translation_list.append(f'"{sport_competition}" of "{sport}" - {url_event}')
+
+
+
+                                            sport_event = "" #Pas d'event particulier, l'équipe gagne la compétition en elle-même
                                             
-                                            one_winner_one_line['Prompt'] = prompt_initial
+                                            date_event = "" #Avoir la date de la finale ne m'intéresse pas vu que l'équipe gagne une compétition de plusieurs jours
+                                            winner_country = "/"
+                                            city = ""
+                                            #J'ajoute tous ces éléments dans mon dictionnaire
+                                            one_winner_one_line = dictionary.add_to_dictionnary(EVENT_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event)
                                             
-                                            #Modification de la variable pour le prompt Midjourney
-                                            rename_prompt_to_midjourney(prompt_initial)
-                                            prompt_import_product(prompt_initial)
-                                            
-                                            #Je rajoute une valeur vide pour la colonne "Commentaire". Si j'ajoute un Com après le scrapping, le nom de l'image Midjourney ne sera pas modifiée
-                                            one_winner_one_line['Commentaire'] = "-"
+                                            one_winner_one_line['Prompt'] = prompt_initial 
+                                            one_winner_one_line['Commentaire'] = "-" #Si com dans Excel, pas de first_rename
+                                            rename_prompt_to_midjourney(prompt_initial)#Modification de la variable pour le prompt Midjourney et envoi dans OWOL
                                             
                                             one_winner_one_line_list.append(one_winner_one_line)
                                             
-                                            #Je modifie le prompt initial qui va servir à créer l'url de chaque image dans wordpress
-                                            prompt_import_product(prompt_initial)
-                                            #Je balance ça dans le dictionnaire et sa fonction "import_wordpress"
+                                            #Je balance les éléments suivants dans le dictionnaire et sa fonction "import_wordpress"
                                             prompt_for_import_product = prompt_import_product(prompt_initial)
                                             short_winner = create_short_winner(winner)
+                                            
                                             data_for_wordpress = dictionary.import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,sport_event, prompt_for_import_product, actual_year, scrapping_month,prompt_initial, month_eng)
                                             data_for_wordpress_list.append(data_for_wordpress)
                                             
@@ -608,8 +604,6 @@ if result.status_code == 200:
                                             else:
                                                 print(f'Ligne {EVENT_COUNTER+1} : Soucis de date pour {sport_event} - {url_event}')
                     #-----------------------Optimiser cette partie du code
-                    
-                    
                                             if sportsmen_table :
                                                 first_row_infos = sportsmen_table[0]
                                                 solo_winner = None #Je remets à zéro au cas où
@@ -636,7 +630,6 @@ if result.status_code == 200:
                                                         winner = None
                                                         #La date de l'event est antérieur à la date du scrapping. Vérifier l'url pour voir pourquoi on a pas de gagnant
                                                         no_winner_identified_list.append(f"Pas de gagnant : {url_event}")
-                                                        #print(f"ATTENTION : Pas de gagnant identifié - {url_event}")
 
                                                 #résultat sous la forme "nom (pays)" si "solo" ou "pays (nom1, nom2)" si "team"
                                                 if winner is not None :
@@ -676,10 +669,9 @@ if result.status_code == 200:
                                                     one_winner_one_line = dictionary.add_to_dictionnary(EVENT_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event)
                                                     
                                                     if winner_country_info :
-                                                        sport = sport.strip() #Mis suite à un soucis rencontré pour un sport qui comportait des espaces à la fin
-                                                        competition_of_sport = f"{sport_competition} of {sport}"
-                                                        
                                                         if city == "": #Le prompt varie en fonction de si j'ai identifié une ville ou non
+                                                            sport = sport.strip()
+                                                            competition_of_sport = f"{sport_competition} of {sport}"
                                                             if competition_of_sport in competition_of_sport_list:
                                                                 j = competition_of_sport_list.index(competition_of_sport)
                                                                 competition_of_sport_traduction_value = competition_of_sport_traduction[j]
@@ -691,7 +683,7 @@ if result.status_code == 200:
                                                                 prompt_initial = f'{winner} ({winner_country}) wins the {sport_event} {sport_competition} of {sport} in {competition_country} on {date_event}'
                                                                 winner_eventdate_concordance(winner,date_event)
                                                                 one_winner_one_line['Prompt'] = prompt_initial
-                                                                no_competition_of_sport_translation_list.append(f'{sport_competition} of {sport} - {url_event}')
+                                                                no_competition_of_sport_translation_list.append(f'"{sport_competition}" of "{sport}" - {url_event}')
                                                                 event_number_list.append(EVENT_COUNTER)
                                                             
                                                             #Modification de la variable pour le prompt Midjourney
@@ -708,6 +700,7 @@ if result.status_code == 200:
                                                             data_for_wordpress_list.append(data_for_wordpress)
                                                             
                                                         else:
+                                                            sport = sport.strip()
                                                             if competition_of_sport in competition_of_sport_list:
                                                                 j = competition_of_sport_list.index(competition_of_sport)
                                                                 competition_of_sport_traduction_value = competition_of_sport_traduction[j]
@@ -720,7 +713,7 @@ if result.status_code == 200:
                                                                 winner_eventdate_concordance(winner,date_event)
                                                                 one_winner_one_line['Prompt'] = prompt_initial
                                                                 
-                                                                no_competition_of_sport_translation_list.append(f'{sport_competition} of {sport} - {url_event}')
+                                                                no_competition_of_sport_translation_list.append(f'"{sport_competition}" of "{sport}" - {url_event}')
                                                                 event_number_list.append(EVENT_COUNTER)
 
                                                             #Modification de la variable pour le prompt Midjourney
@@ -741,6 +734,7 @@ if result.status_code == 200:
                                                     
                                                     else :
                                                         if city == "": #Le prompt varie en fonction de si j'ai identifié une ville ou non
+                                                            sport = sport.strip()
                                                             competition_of_sport = f"{sport_competition} of {sport}"
                                                             if competition_of_sport in competition_of_sport_list:
                                                                 j = competition_of_sport_list.index(competition_of_sport)
@@ -754,7 +748,7 @@ if result.status_code == 200:
                                                                 winner_eventdate_concordance(winner,date_event)
                                                                 one_winner_one_line['Prompt'] = prompt_initial
                                                                 
-                                                                no_competition_of_sport_translation_list.append(f'{sport_competition} of {sport} - {url_event}')
+                                                                no_competition_of_sport_translation_list.append(f'"{sport_competition}" of "{sport}" - {url_event}')
                                                                 event_number_list.append(EVENT_COUNTER)
 
                                                             
@@ -772,6 +766,7 @@ if result.status_code == 200:
                                                             data_for_wordpress_list.append(data_for_wordpress)
                                                             
                                                         else:
+                                                            sport = sport.strip()
                                                             competition_of_sport = f"{sport_competition} of {sport}"
                                                             if competition_of_sport in competition_of_sport_list:
                                                                 j = competition_of_sport_list.index(competition_of_sport)
@@ -785,7 +780,7 @@ if result.status_code == 200:
                                                                 winner_eventdate_concordance(winner,date_event)
                                                                 one_winner_one_line['Prompt'] = prompt_initial
                                                                 
-                                                                no_competition_of_sport_translation_list.append(f'{sport_competition} of {sport} - {url_event}')
+                                                                no_competition_of_sport_translation_list.append(f'"{sport_competition}" of "{sport}" - {url_event}')
                                                                 event_number_list.append(EVENT_COUNTER)
 
                                                             

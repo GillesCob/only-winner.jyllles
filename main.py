@@ -9,6 +9,8 @@ import random
 import dictionary
 import re
 
+import os
+
 #Seule variable à changer, mois à scrapper en français
 scrapping_month = 'Février'
 actual_day = int(datetime.now().day)
@@ -128,12 +130,12 @@ def create_short_winner(winner): #Diminuer le nombre de caractères afin d'avoir
         short_winner = winner
     return short_winner
 
-def recent_winner_prompt(date_event, date_dernier_scrapping, prompt_initial, midjourney_parameters, EVENT_COUNTER): #Identification gagnant depuis le dernier scrapping
-    if date_event:
-        date_number = re.search(r'\d+', date_event)
-        date_number_int = int(date_number.group())
-        if date_number_int >= date_dernier_scrapping :
-            recents_winners_prompt_list.append(f"{EVENT_COUNTER} - {prompt_initial} {midjourney_parameters}")
+# def recent_winner_prompt(date_event, date_dernier_scrapping, prompt_initial, midjourney_parameters, EVENT_COUNTER): #Identification gagnant depuis le dernier scrapping
+#     if date_event:
+#         date_number = re.search(r'\d+', date_event)
+#         date_number_int = int(date_number.group())
+#         if date_number_int >= date_dernier_scrapping :
+#             recents_winners_prompt_list.append(f"{EVENT_COUNTER} - {prompt_initial} {midjourney_parameters}")
 
 #----------------------VARIABLES INITIALES----------------------#
 
@@ -157,8 +159,16 @@ nom_comp_of_sport_sheet = "COMP OF SPORT"
 nom_month_sheet = "MONTH"
 nom_twitter_sheet = "TWITTER"
 
+dossier_NFT = f"/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/2024/{scrapping_month}/NFT_READY" #Dossier contenant tous les NFT déjà réalisés
+
+    
+
 #----------------------LISTES----------------------#
-one_winner_one_line_list = [] #Liste contenant toutes les infos pour chaque event (OWOL) => Utilisée pour créer l'Excel
+all_month_winners_list = [] #Liste contenant toutes les infos pour chaque event pour tout le mois
+winners_without_nft_list = [] #Contient tous les données concernant les vainqueurs ayant déjà leur carte finalisée
+
+winners_with_nft_list = [] #Contient tous les données concernant les vainqueurs ayant déjà leur carte finalisée
+
 data_for_wordpress_list = [] #Liste de toutes les infos pour l'import Product sur WP
 
 #----------------------LISTES LIEES A DE LA VERIFICATIONS----------------------#
@@ -190,10 +200,10 @@ multiple_winnings_same_day_list = []
 
 #----------------------VERIFS EXCEL----------------------#
 #1 - Est-ce que le fichier Excel existe ?
-nom_ecxel_month = f'/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/2024/{scrapping_month}/EXCEL/DATAS 2.xlsx'
+nom_excel_month = f'/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/2024/{scrapping_month}/EXCEL/DATAS 2.xlsx'
 nom_exel_bdd_datas = f'/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/BDD INITIALE.xlsx'
 try:
-    classeur_excel_month_exist = openpyxl.load_workbook(nom_ecxel_month)
+    classeur_excel_month_exist = openpyxl.load_workbook(nom_excel_month)
     feuille_excel_month_exist = classeur_excel_month_exist.active
 except FileNotFoundError:
     classeur_exist = None
@@ -204,9 +214,13 @@ try:
 except FileNotFoundError:
     classeur_exist = None
     
+#Je charge tous les prompts pour les NFT déjà réalisés
+for nom_nft in os.listdir(dossier_NFT):
+    nom_nft = nom_nft[:-4]  # Retirer l'extension ".png"
+    winners_with_nft_list.append(nom_nft)
     
 #Je charge l'Excel
-classeur = openpyxl.load_workbook(nom_ecxel_month)
+classeur = openpyxl.load_workbook(nom_excel_month)
 classeur_bdd_datas = openpyxl.load_workbook(nom_exel_bdd_datas)
 
 #Ajouts du nom des feuilles Excel suite au changement d'organisation de l'Excel
@@ -553,9 +567,7 @@ if result.status_code == 200:
                                             else:
                                                 prompt_initial = 'Pas de prompt' #Je dois avoir une formulation de prompt nickel
                                                 
-                                            
-#----------------------------------------------------------------------------------------JE VAIS AJOUTER ICI LE FAIT DE COMPARER LE PROMPT AVEC LES TITRES DE NFT DEJA CREES. SI PRESENT, JE N'AJOUTE PAS DANS LE DICTIONNAIRE
-#Je me retrouve ainsi à la date du jour dans l'excel avec uniquement les données pour les compétitions qui n'ont pas encore leur NFT
+
 
                                             sport_event = "" #Pas d'event particulier, l'équipe gagne la compétition en elle-même
                                             date_event = "" #Avoir la date de la finale ne m'intéresse pas vu que l'équipe gagne une compétition de plusieurs jours
@@ -568,19 +580,21 @@ if result.status_code == 200:
                                             #one_winner_one_line['Commentaire'] = "-" #Si com dans Excel, pas de first_rename
                                             rename_prompt_to_midjourney(prompt_initial)#Modification de la variable pour le prompt Midjourney et envoi dans one_winner_one_line
                                             
-                                            #J'ai toutes les valeurs pour l'Excel, j'envoi les données du dictionnaire vers la liste qui servira à compléter l'Excel à la date du scrapping
-                                            one_winner_one_line_list.append(one_winner_one_line)
-                                            
-                                            #Je balance les éléments suivants dans le dictionnaire et sa fonction "import_wordpress"
-                                            prompt_for_import_product = prompt_import_product(prompt_initial)
-                                            short_winner = create_short_winner(winner)
-                                            data_for_wordpress = dictionary.import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,sport_event, prompt_for_import_product, actual_year, scrapping_month,prompt_initial, month_eng)
-                                            
-                                            #J'ai toutes les valeurs pour l'Excel, j'envoi les données du dictionnaire vers la liste qui servira à compléter l'Excel à la date du scrapping
-                                            data_for_wordpress_list.append(data_for_wordpress)
-                                            
-                                            #Identification gagnant depuis le dernier scrapping et création automatique du prompt pour créer les cartes
-                                            recent_winner_prompt(date_event, date_dernier_scrapping, prompt_initial, midjourney_parameters, EVENT_COUNTER)
+                                            #J'ai toutes les valeurs pour l'Excel, j'envoi les données du dictionnaire vers la feuille qui contiendra tous les gagnants du mois
+                                            all_month_winners_list.append(one_winner_one_line)
+
+
+                                            if prompt_initial not in winners_with_nft_list : #La carte n'est pas encore créée. j'envoi ces données dans la liste du jour
+                                                winners_without_nft_list.append(one_winner_one_line)
+                                                
+                                                #Je balance les éléments suivants dans le dictionnaire et sa fonction "import_wordpress"
+                                                prompt_for_import_product = prompt_import_product(prompt_initial)
+                                                short_winner = create_short_winner(winner)
+                                                data_for_wordpress = dictionary.import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,sport_event, prompt_for_import_product, actual_year, scrapping_month,prompt_initial, month_eng)
+                                                
+                                                #J'ai toutes les valeurs pour l'Excel, j'envoi les données du dictionnaire vers la liste qui servira à compléter l'Excel à la date du scrapping
+                                                data_for_wordpress_list.append(data_for_wordpress)
+
 
                                         else:
                                             date_number = re.search(r'\d+', date_event)
@@ -786,10 +800,8 @@ if result.status_code == 200:
                                                     data_for_wordpress_list.append(data_for_wordpress)
                                                     
                                                     #J'append la liste relative à la feuille du jour
-                                                    one_winner_one_line_list.append(one_winner_one_line) #j'ajoute le dictionnaire à ma liste contenant tous les gagnants et leurs infos annexes
+                                                    all_month_winners_list.append(one_winner_one_line) #j'ajoute le dictionnaire à ma liste contenant tous les gagnants et leurs infos annexes
                                                     
-                                                    #Identification gagnant depuis le dernier scrapping et création automatique du prompt pour créer les cartes
-                                                    recent_winner_prompt(date_event, date_dernier_scrapping, prompt_initial, midjourney_parameters, EVENT_COUNTER)
                                                     
                                                 else:
                                                     pass #Si j'atterris ici j'ai déjà eu une alerte via : print(f"Je n'ai pas de gagnant identifiable : {url_event}")
@@ -912,23 +924,23 @@ if result.status_code == 200:
 #Création de l'Excel
     # Créer un DataFrame pandas à partir de la liste d'événements
     #df = pd.DataFrame(competition_list)
-    df1 = pd.DataFrame(one_winner_one_line_list)
+    df1 = pd.DataFrame(all_month_winners_list)
     df2 = pd.DataFrame(data_for_wordpress_list)
 
     # Ajouter la nouvelle feuille si le fichier existe déjà
-    with pd.ExcelWriter(nom_ecxel_month, engine='openpyxl', mode='a') as writer:
+    with pd.ExcelWriter(nom_excel_month, engine='openpyxl', mode='a') as writer:
         try:
-            writer.book.remove(writer.book[actual_day])
+            writer.book.remove(writer.book["ALL"])
         except KeyError:
             pass
         
-    with pd.ExcelWriter(nom_ecxel_month, engine='openpyxl', mode='a') as writer:
+    with pd.ExcelWriter(nom_excel_month, engine='openpyxl', mode='a') as writer:
         try:
             writer.book.remove(writer.book["Data for WP"])
         except KeyError:
             pass
                 
-        df1.to_excel(writer, sheet_name=f"{actual_day}", index=False)
+        df1.to_excel(writer, sheet_name=f"ALL", index=False)
         df2.to_excel(writer, sheet_name="Data for WP", index=False)
         print(f"Scrapping terminé !")
 

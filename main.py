@@ -530,7 +530,6 @@ if result.status_code == 200:
                                                 winning_team_name = f'-'
                                                 
                                             winner = winning_team_name
-                                            
                                             if winner != "-":
                                                 #Je vérifie si j'ai une bonne traduction pour le Prompt au niveau du competition of sport
                                                 competition_of_sport = f"{sport_competition} of {sport}"
@@ -554,10 +553,11 @@ if result.status_code == 200:
                                             date_event = "" #Avoir la date de la finale ne m'intéresse pas vu que l'équipe gagne une compétition de plusieurs jours
                                             winner_country = "/"
                                             city = ""
-                                            one_winner_one_line = dictionary.add_to_dictionnary(EVENT_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event)
+                                            commentaire = "-"
                                             
-                                            one_winner_one_line['Prompt'] = prompt_initial 
-                                            one_winner_one_line['Commentaire'] = "-" #Si com dans Excel, pas de first_rename
+                                            one_winner_one_line = dictionary.add_to_dictionnary(EVENT_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event,prompt_initial, commentaire)
+                                            #one_winner_one_line['Prompt'] = prompt_initial 
+                                            #one_winner_one_line['Commentaire'] = "-" #Si com dans Excel, pas de first_rename
                                             rename_prompt_to_midjourney(prompt_initial)#Modification de la variable pour le prompt Midjourney et envoi dans one_winner_one_line
                                             
                                             #J'ai toutes les valeurs pour l'Excel, j'envoi les données du dictionnaire vers la liste qui servira à compléter l'Excel à la date du scrapping
@@ -573,9 +573,17 @@ if result.status_code == 200:
                                             
                                             #Identification gagnant depuis le dernier scrapping et création automatique du prompt pour créer les cartes
                                             recent_winner_prompt(date_event, date_dernier_scrapping, prompt_initial, midjourney_parameters, EVENT_COUNTER)
-                                            
+
                                         else:
-                                            no_winner_identified_list.append(f"Pas de gagnant : {url_event}")
+                                            date_number = re.search(r'\d+', date_event)
+                                            date_number_int = int(date_number.group())
+                                            if date_number_int > verif_date_event :
+                                                    #La date de l'event est supérieur à la date de vérif. Je ne print rien. Normal de ne pas avoir de gagnant
+                                                    winner = None
+                                            else:
+                                                winner = None
+                                                #La date de l'event est antérieur à la date du scrapping. Vérifier l'url pour voir pourquoi on a pas de gagnant
+                                                no_winner_identified_list.append(f"Pas de gagnant : {url_event}")
                                             
     #----------------------------------------------------------------------------------------BOUCLE2---------------------------------------------------------------------------------
     #-------------------------------------------------------------------------------Vainqueur = Individu(s)--------------------------------------------------------------------------
@@ -602,7 +610,6 @@ if result.status_code == 200:
                     
                    #-----------------------Idem pour la date. A voir comment optimiser plus tard
                                             date_matches = [Date for Date in FR_Date if Date.lower() in specific_event_title.lower()]
-                                            
                                             if date_matches:
                                                 Good_date = max(date_matches, key=len)
                                                 date_event = Good_date
@@ -747,9 +754,10 @@ if result.status_code == 200:
 #TOUS LES ELEMENTS CI-DESSOUS SERVENT A LA CREATION DES DICTIONNAIRES PUIS A LA LISTE QUI SERVIRA A REMPLIR L'EXCEL
 # MAJ A METTRE EN PLACE AFIN DE PASSER ICI UNIQUEMENT SI UN NFT CONTENANT LE PROMPT N'A PAS ENCORE ETE CREE
                                                     #Je créé les dictionnaires et tout le tralala
-                                                    one_winner_one_line = dictionary.add_to_dictionnary(EVENT_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event)   
-                                                    one_winner_one_line['Prompt'] = prompt_initial
-                                                    one_winner_one_line['Commentaire'] = "-"
+                                                    commentaire = "-"
+                                                    one_winner_one_line = dictionary.add_to_dictionnary(EVENT_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event, prompt_initial, commentaire)   
+                                                    #one_winner_one_line['Prompt'] = prompt_initial
+                                                    #one_winner_one_line['Commentaire'] = "-"
                                                     
                                                     #Modification de la variable pour le prompt Midjourney
                                                     rename_prompt_to_midjourney(prompt_initial)

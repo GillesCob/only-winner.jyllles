@@ -1,5 +1,5 @@
 
-def add_to_dictionnary (EVENT_COUNTER,competition_date,country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event):
+def add_to_dictionnary (EVENT_COUNTER,competition_date,country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event,prompt_initial, commentaire):
     return {
         'Nom image' : f'Diapositive{EVENT_COUNTER}',
         'Date_competition' : competition_date,
@@ -11,7 +11,9 @@ def add_to_dictionnary (EVENT_COUNTER,competition_date,country,city,sport,sport_
         'Date_épreuve' : date_event,
         'Gagnant' : winner,
         'Gagnant_Pays' : winner_country,
-        'Lien' : url_event
+        'Lien' : url_event,
+        "Prompt" : prompt_initial,
+        "Commentaire" : commentaire,
         }
 
 def import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,sport_event, prompt_for_import_product, actual_year, actual_month,prompt_initial, month_eng):

@@ -12,7 +12,7 @@ import re
 import os
 
 #Seule variable à changer, mois à scrapper en français
-scrapping_month = 'Février'
+scrapping_month = 'Mars'
 actual_day = int(datetime.now().day)
 verif_date_event = actual_day-13
 jours_depuis_dernier_scrapping = 1 #Mettre 1 si scrapping fait hier, ...
@@ -576,17 +576,11 @@ if result.status_code == 200:
                                             commentaire = "-"
                                             
                                             one_winner_one_line = dictionary.add_to_dictionnary(EVENT_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event,prompt_initial, commentaire)
-                                            #one_winner_one_line['Prompt'] = prompt_initial 
-                                            #one_winner_one_line['Commentaire'] = "-" #Si com dans Excel, pas de first_rename
                                             rename_prompt_to_midjourney(prompt_initial)#Modification de la variable pour le prompt Midjourney et envoi dans one_winner_one_line
-                                            
-                                            #J'ai toutes les valeurs pour l'Excel, j'envoi les données du dictionnaire vers la feuille qui contiendra tous les gagnants du mois
                                             all_month_winners_list.append(one_winner_one_line)
-
 
                                             if prompt_initial not in winners_with_nft_list : #La carte n'est pas encore créée. j'envoi ces données dans la liste du jour
                                                 winners_without_nft_list.append(one_winner_one_line)
-                                                
                                                 #Je balance les éléments suivants dans le dictionnaire et sa fonction "import_wordpress"
                                                 prompt_for_import_product = prompt_import_product(prompt_initial)
                                                 short_winner = create_short_winner(winner)
@@ -777,30 +771,24 @@ if result.status_code == 200:
 # MAJ A METTRE EN PLACE AFIN DE PASSER ICI UNIQUEMENT SI UN NFT CONTENANT LE PROMPT N'A PAS ENCORE ETE CREE
                                                     #Je créé les dictionnaires et tout le tralala
                                                     commentaire = "-"
-                                                    one_winner_one_line = dictionary.add_to_dictionnary(EVENT_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event, prompt_initial, commentaire)   
-                                                    #one_winner_one_line['Prompt'] = prompt_initial
-                                                    #one_winner_one_line['Commentaire'] = "-"
                                                     
-                                                    #Modification de la variable pour le prompt Midjourney
+                                                    one_winner_one_line = dictionary.add_to_dictionnary(EVENT_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event, prompt_initial, commentaire)
                                                     rename_prompt_to_midjourney(prompt_initial)
-                                                    
-                                                    #Je modifie le prompt initial qui va servir à créer l'url de chaque image dans wordpress
-                                                    prompt_import_product(prompt_initial)
-                                                    
-                                                    #Je balance ça dans le dictionnaire et sa fonction "import_wordpress"
-                                                    prompt_for_import_product = prompt_import_product(prompt_initial)
-                                                    
-                                                    #Je créé un short winner car import image impossible dans WP si > à 50 caractères
-                                                    short_winner = create_short_winner(winner)
-                                                    
-                                                    #Création dictionnaire pour la feuille IMPORT WP
-                                                    data_for_wordpress = dictionary.import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,sport_event, prompt_for_import_product, actual_year, scrapping_month,prompt_initial, month_eng)
-                                                    
-                                                    #j'append la liste relative à la feuille IMPORT WP
-                                                    data_for_wordpress_list.append(data_for_wordpress)
-                                                    
-                                                    #J'append la liste relative à la feuille du jour
                                                     all_month_winners_list.append(one_winner_one_line) #j'ajoute le dictionnaire à ma liste contenant tous les gagnants et leurs infos annexes
+                                                    
+                                                    if prompt_initial not in winners_with_nft_list : #La carte n'est pas encore créée. j'envoi ces données dans la liste du jour
+                                                        winners_without_nft_list.append(one_winner_one_line)
+                                                        
+                                                        #Je balance les éléments suivants dans le dictionnaire et sa fonction "import_wordpress"
+                                                        prompt_for_import_product = prompt_import_product(prompt_initial)
+                                                        short_winner = create_short_winner(winner)
+                                                        data_for_wordpress = dictionary.import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,sport_event, prompt_for_import_product, actual_year, scrapping_month,prompt_initial, month_eng)
+                                                        
+                                                        #J'ai toutes les valeurs pour l'Excel, j'envoi les données du dictionnaire vers la liste qui servira à compléter l'Excel à la date du scrapping
+                                                        data_for_wordpress_list.append(data_for_wordpress)
+                                                    
+            
+                                          
                                                     
                                                     
                                                 else:
@@ -925,7 +913,8 @@ if result.status_code == 200:
     # Créer un DataFrame pandas à partir de la liste d'événements
     #df = pd.DataFrame(competition_list)
     df1 = pd.DataFrame(all_month_winners_list)
-    df2 = pd.DataFrame(data_for_wordpress_list)
+    df2 = pd.DataFrame(winners_without_nft_list)
+    df3 = pd.DataFrame(data_for_wordpress_list)
 
     # Ajouter la nouvelle feuille si le fichier existe déjà
     with pd.ExcelWriter(nom_excel_month, engine='openpyxl', mode='a') as writer:
@@ -933,15 +922,22 @@ if result.status_code == 200:
             writer.book.remove(writer.book["ALL"])
         except KeyError:
             pass
-        
+    with pd.ExcelWriter(nom_excel_month, engine='openpyxl', mode='a') as writer:
+        try:
+            writer.book.remove(writer.book[actual_day])                  
+        except KeyError:
+                pass
     with pd.ExcelWriter(nom_excel_month, engine='openpyxl', mode='a') as writer:
         try:
             writer.book.remove(writer.book["Data for WP"])
         except KeyError:
             pass
+
                 
         df1.to_excel(writer, sheet_name=f"ALL", index=False)
-        df2.to_excel(writer, sheet_name="Data for WP", index=False)
+        df2.to_excel(writer, sheet_name=actual_day, index=False)
+        df3.to_excel(writer, sheet_name="Data for WP", index=False)
+
         print(f"Scrapping terminé !")
 
 else:

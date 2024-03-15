@@ -844,70 +844,68 @@ if result.status_code == 200:
     print()
     
     if no_city_list :
-        print(f'Compétition sans ville ? Ajouter dans feuille "CITY" : ')
+        print("\033[4m" + 'Compétition sans ville ? Ajouter dans feuille "CITY" : ' + "\033[0m", end="")
         for no_city in no_city_list:
             print(f" - {no_city}")
         print(f'-------------------------')
         print()
     
     if no_winner_identified_list :
-        print(f"Pas de gagnant identifié alors que l'épreuve est déjà passée : ")
+        print("\033[4m" + "Pas de gagnant identifié alors que l'épreuve est déjà passée : " + "\033[0m", end="")
         for no_winner_identified in no_winner_identified_list:
             print(f" - {no_winner_identified}")
         print(f'-------------------------')
         print()
     
     if no_competition_of_sport_translation_list :
-        print(f'Pas de traduction de competition of sport ? Ajouter dans feuille "COMP OD SPORT" : ')
+        print("\033[4m" +'Pas de traduction de competition of sport ? Ajouter dans feuille "COMP OD SPORT" : ' + "\033[0m", end="")
         for no_competition_of_sport_translation in no_competition_of_sport_translation_list:
             print(f" - {no_competition_of_sport_translation}")
         print(f'-------------------------')
         print()
     
     if no_event_translation_list :
-        print(f"Pas de traduction de l'épreuve ? Ajouter dans feuille 'EVENT' : ")
+        print("\033[4m" + "Pas de traduction de l'épreuve ? Ajouter dans feuille 'EVENT' : " + "\033[0m", end="")
         for no_event_translation in no_event_translation_list:
             print(f" - {no_event_translation}")
         print(f'-------------------------')
         print()
     
     if just_men_or_women_list :
-        print(f"Epreuve traduite en Men ou Women. Ajouter l'event dans feuille 'EVENT' si pas normal : ")
+        print("\033[4m" + "Epreuve traduite en Men ou Women. Ajouter l'event dans feuille 'EVENT' si pas normal : " + "\033[0m", end="")
         for just_men_or_women in just_men_or_women_list:
             print(f" - {just_men_or_women}")
         print(f'-------------------------')
         print()
         
     if no_country_translation_list:
-        print(f"Pas de traduction du pays ? Ajouter dans feuille 'COUNTRY' : ")
+        print("\033[4m" + "Pas de traduction du pays ? Ajouter dans feuille 'COUNTRY' : " + "\033[0m", end="")
         for country_without_translation in no_country_translation_list:
             print(f" - {country_without_translation}")
         print(f'-------------------------')
         print()
         
     if no_abr_translation_list:
-        print(f"Pas de traduction de l'abréviation d'un pays ? Ajouter dans feuille 'ABREVIATION' : ")
+        print("\033[4m" + "Pas de traduction de l'abréviation d'un pays ? Ajouter dans feuille 'ABREVIATION' : " + "\033[0m", end="")
         for abr_translation in no_abr_translation_list:
             print(f" - {abr_translation}")
         print(f'-------------------------')
         print()       
         
     if multiple_winnings_same_day_list :
-        print(f"Ces athlètes ont remporté plusieurs épreuves le même jour : ")
+        print("\033[4m" + "Ces athlètes ont remporté plusieurs épreuves le même jour : " + "\033[0m", end="")
         for winnings_same_day in multiple_winnings_same_day_list:
             print(f" - {winnings_same_day}")
         print(f'-------------------------')
         print()
 
-    # if recents_winners_prompt_list :
-    #     print("\033[4m" + "De nouveaux gagnants depuis le dernier scrapping du : " + "\033[0m", end="")
-    #     print(f'{date_dernier_scrapping} {scrapping_month}')
-    #     print("\033[4m" + "Voici les prompts pour créer les images sur Midjourney : " + "\033[0m", end="")
-    #     print()
-    #     for recents_winners_prompt in recents_winners_prompt_list:
-    #         print(f"{recents_winners_prompt}")
-    #     print(f'--------------------------------------------------')
-    #     print()
+    if winners_without_nft_list :
+        print("\033[4m" + "Voici les prompts pour créer les images sur Midjourney des derniers vainqueurs identifiés " + "\033[0m", end="")
+        print()
+        for winner_without_nft_list in winners_without_nft_list:
+            print(f"{winner_without_nft_list['Prompt']} {midjourney_parameters}")
+        print(f'--------------------------------------------------')
+        print()
 
 #Création de l'Excel
     # Créer un DataFrame pandas à partir de la liste d'événements

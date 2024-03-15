@@ -190,29 +190,37 @@ multiple_winnings_same_day_list = []
 
 #----------------------VERIFS EXCEL----------------------#
 #1 - Est-ce que le fichier Excel existe ?
-nom_fichier = f'/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/2024/{scrapping_month}/EXCEL/DATAS 2.xlsx'
+nom_ecxel_month = f'/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/2024/{scrapping_month}/EXCEL/DATAS 2.xlsx'
+nom_exel_bdd_datas = f'/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/BDD INITIALE.xlsx'
 try:
-    classeur_exist = openpyxl.load_workbook(nom_fichier)
-    feuille_exist = classeur_exist.active
+    classeur_excel_month_exist = openpyxl.load_workbook(nom_ecxel_month)
+    feuille_excel_month_exist = classeur_excel_month_exist.active
+except FileNotFoundError:
+    classeur_exist = None
+    
+try:
+    classeur_bdd_datas_exist = openpyxl.load_workbook(nom_exel_bdd_datas)
+    feuille_bdd_datas_exist = classeur_bdd_datas_exist.active
 except FileNotFoundError:
     classeur_exist = None
     
     
 #Je charge l'Excel
-classeur = openpyxl.load_workbook(nom_fichier)  
+classeur = openpyxl.load_workbook(nom_ecxel_month)
+classeur_bdd_datas = openpyxl.load_workbook(nom_exel_bdd_datas)
 
 #Ajouts du nom des feuilles Excel suite au changement d'organisation de l'Excel
-sport_sheet = classeur["SPORT"]
-competition_sheet = classeur["COMPETITION"]
-event_sheet = classeur["EVENT"]
-ignore_event_sheet = classeur["IGNORE EVENT"]
-country_sheet = classeur["COUNTRY"]
-city_sheet = classeur["CITY"]
-date_sheet = classeur["DATE"]
-abreviation_sheet = classeur["ABREVIATION"]
-comp_of_sport_sheet = classeur["COMP OF SPORT"]
-month_sheet = classeur["MONTH"]
-twitter_sheet = classeur["TWITTER"]
+sport_sheet = classeur_bdd_datas["SPORT"]
+competition_sheet = classeur_bdd_datas["COMPETITION"]
+event_sheet = classeur_bdd_datas["EVENT"]
+ignore_event_sheet = classeur_bdd_datas["IGNORE EVENT"]
+country_sheet = classeur_bdd_datas["COUNTRY"]
+city_sheet = classeur_bdd_datas["CITY"]
+date_sheet = classeur_bdd_datas["DATE"]
+abreviation_sheet = classeur_bdd_datas["ABREVIATION"]
+comp_of_sport_sheet = classeur_bdd_datas["COMP OF SPORT"]
+month_sheet = classeur_bdd_datas["MONTH"]
+twitter_sheet = classeur_bdd_datas["TWITTER"]
     
 
 
@@ -907,26 +915,22 @@ if result.status_code == 200:
     df1 = pd.DataFrame(one_winner_one_line_list)
     df2 = pd.DataFrame(data_for_wordpress_list)
 
-    if classeur_exist is not None:
-        # Ajouter la nouvelle feuille si le fichier existe déjà
-        with pd.ExcelWriter(nom_fichier, engine='openpyxl', mode='a') as writer:
-            try:
-                writer.book.remove(writer.book[actual_day])
-            except KeyError:
-                pass
-            
-        with pd.ExcelWriter(nom_fichier, engine='openpyxl', mode='a') as writer:
-            try:
-                writer.book.remove(writer.book["Data for WP"])
-            except KeyError:
-                pass
-                    
-            df1.to_excel(writer, sheet_name=f"{actual_day}", index=False)
-            df2.to_excel(writer, sheet_name="Data for WP", index=False)
-            print(f"Scrapping terminé !")
-    else:
-        # Écrire le DataFrame dans un nouveau fichier Excel si le fichier n'existe pas
-        #df.to_excel(f'{actual_month}-{actual_year}.xlsx', sheet_name=f"{actual_day}", index=False)
-        print("Fichier Excel créé avec succès.")
+    # Ajouter la nouvelle feuille si le fichier existe déjà
+    with pd.ExcelWriter(nom_ecxel_month, engine='openpyxl', mode='a') as writer:
+        try:
+            writer.book.remove(writer.book[actual_day])
+        except KeyError:
+            pass
+        
+    with pd.ExcelWriter(nom_ecxel_month, engine='openpyxl', mode='a') as writer:
+        try:
+            writer.book.remove(writer.book["Data for WP"])
+        except KeyError:
+            pass
+                
+        df1.to_excel(writer, sheet_name=f"{actual_day}", index=False)
+        df2.to_excel(writer, sheet_name="Data for WP", index=False)
+        print(f"Scrapping terminé !")
+
 else:
     print("Erreur", result.status_code)

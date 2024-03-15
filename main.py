@@ -145,6 +145,7 @@ url = "https://www.les-sports.info/calendrier-sport-2024-p0-62024.html"
 midjourney_parameters = ",oil painting style, colorful lighting,--ar 1:1 --c 100 --s 965 --v 5.1"
 COMPETITION_COUNTER = 0
 EVENT_COUNTER = 0
+EVENT_SPECIFIC_COUNTER = 0 #Sert à mettre un numéro qui démarre à 1 pour les nouvelles victoires (nécessaire pour second_rename et l'export PPT)
 SEUIL_CORRESPONDANCE = 20
 
 nom_sport_sheet = "SPORT"
@@ -580,6 +581,8 @@ if result.status_code == 200:
                                             all_month_winners_list.append(one_winner_one_line)
 
                                             if prompt_initial not in winners_with_nft_list : #La carte n'est pas encore créée. j'envoi ces données dans la liste du jour
+                                                EVENT_SPECIFIC_COUNTER +=1
+                                                one_winner_one_line['Nom image'] = f'Diapositive{EVENT_SPECIFIC_COUNTER}'
                                                 winners_without_nft_list.append(one_winner_one_line)
                                                 #Je balance les éléments suivants dans le dictionnaire et sa fonction "import_wordpress"
                                                 prompt_for_import_product = prompt_import_product(prompt_initial)
@@ -777,8 +780,9 @@ if result.status_code == 200:
                                                     all_month_winners_list.append(one_winner_one_line) #j'ajoute le dictionnaire à ma liste contenant tous les gagnants et leurs infos annexes
                                                     
                                                     if prompt_initial not in winners_with_nft_list : #La carte n'est pas encore créée. j'envoi ces données dans la liste du jour
+                                                        EVENT_SPECIFIC_COUNTER +=1
+                                                        one_winner_one_line['Nom image'] = f'Diapositive{EVENT_SPECIFIC_COUNTER}'
                                                         winners_without_nft_list.append(one_winner_one_line)
-                                                        
                                                         #Je balance les éléments suivants dans le dictionnaire et sa fonction "import_wordpress"
                                                         prompt_for_import_product = prompt_import_product(prompt_initial)
                                                         short_winner = create_short_winner(winner)
@@ -903,6 +907,7 @@ if result.status_code == 200:
         print("\033[4m" + "Voici les prompts pour créer les images sur Midjourney des derniers vainqueurs identifiés " + "\033[0m", end="")
         print()
         for winner_without_nft_list in winners_without_nft_list:
+            print()
             print(f"{winner_without_nft_list['Prompt']} {midjourney_parameters}")
         print(f'--------------------------------------------------')
         print()

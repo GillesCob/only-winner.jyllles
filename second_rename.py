@@ -12,8 +12,6 @@ too_long = 1
 
 # Chemin vers le fichier Excel
 excel_month_file_path = f'/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/2024/{scrapping_month}/EXCEL/DATAS 2.xlsx'
-excel_BDD_INITIALE_file_path = f'/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/BDD INITIALE.xlsx'
-
 
 # Lire les données Excel en utilisant pandas depuis la feuille du jour
 df1 = pd.read_excel(excel_month_file_path, sheet_name=Feuille_datas)

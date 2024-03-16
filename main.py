@@ -559,7 +559,7 @@ if result.status_code == 200:
                                             winner_country = "/"
                                             city = ""
                                             
-                                            all_winners_one_sheet = dictionary.add_to_ALL(EVENT_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event,prompt_initial,actual_year)
+                                            all_winners_one_sheet = dictionary.add_to_ALL_sheet(EVENT_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event,prompt_initial,actual_year)
                                             all_month_winners_list.append(all_winners_one_sheet)
                                             
                                             name_NFT = f"{winner}-{event}-{date_event}-{actual_year}"
@@ -747,7 +747,7 @@ if result.status_code == 200:
                                                                 #ALERTE
                                                                 no_competition_of_sport_translation_list.append(f'{sport_competition} of {sport} - {url_event}')
 
-                                                    all_winners_one_sheet = dictionary.add_to_ALL(competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event, prompt_initial,actual_year)
+                                                    all_winners_one_sheet = dictionary.add_to_ALL_sheet(competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event, prompt_initial,actual_year)
                                                     all_month_winners_list.append(all_winners_one_sheet) #j'ajoute le dictionnaire à ma liste contenant tous les gagnants et leurs infos annexes
                                                     
                                                     name_NFT = f"{winner}-{sport_event}-{date_event}-{actual_year}"

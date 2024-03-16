@@ -1,5 +1,5 @@
 
-def add_to_ALL (competition_date,country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event,prompt_initial, actual_year):
+def add_to_ALL_sheet (competition_date,country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event,prompt_initial, actual_year):
     return {
         'Date_competition' : competition_date,
         'Pays' : country,

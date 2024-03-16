@@ -17,12 +17,10 @@ actual_month = str(datetime.now().month)
 actual_day = str(datetime.now().day)
 scrapping_month = "Mars"
 Feuille_datas = str(actual_day)
-diapositive_xx = 1
+diapositive_xx = 9
 
-valeurs_colonne_J = []
 comp_of_sport_list = []
 comp_of_sport_card_list = []
-valeurs_colonne_L = []
 # Charger le fichier Excel
 excel_month_file_path = f'/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/2024/{scrapping_month}/EXCEL/DATAS 2.xlsx'
 excel_BDD_INITIALE_file_path = f'/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/BDD INITIALE.xlsx'
@@ -53,12 +51,11 @@ for cell in nom_comp_of_sport_sheet['C'][1:]:
 
 # Récupérer la valeur de la cellule A2 dans Excel
 for i in range (2, NOMBRE_EVENTS):
-
     number = excel_sheet[f'A{i}'].value
     competition_sport = f'{excel_sheet[f"F{i}"].value} of {excel_sheet[f"E{i}"].value}'
     prompt = excel_sheet[f'L{i}'].value
     winner = excel_sheet[f'I{i}'].value
-    ref = excel_sheet[f'A{i}'].value
+    nom_NFT = excel_sheet[f'M{i}'].value
 
     # Accéder aux diapos en fonction du i
     slides = presentation.slides[i-2]
@@ -84,12 +81,6 @@ for i in range (2, NOMBRE_EVENTS):
             if prompt is not None :
                 slide.text_frame.text = prompt
                 
-        #Ref
-        elif slide.has_text_frame and "REF" in slide.text_frame.text:
-            # Mettre à jour le texte avec la valeur de l'Excel
-            if ref is not None :
-                slide.text_frame.text = ref
-                
         #Note
         notes_slide = slides.notes_slide
         notes_placeholder = notes_slide.notes_text_frame
@@ -104,7 +95,7 @@ for i in range (2, NOMBRE_EVENTS):
                     run.font.size = Pt(50)
                     
     # Lien vers l'image à insérer sur sa diapo
-    image_path = f'/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/2024/{scrapping_month}/IMAGES_MIDJOURNEY/{prompt}.png'
+    image_path = f'/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/2024/{scrapping_month}/IMAGES_MIDJOURNEY/{nom_NFT}.png'
     #print(winner)
 
     #presentation.slides[0].shapes[-1].element.clear()

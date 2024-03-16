@@ -41,17 +41,15 @@ for nom_fichier in os.listdir(dossier_images):
             for index, row in df.iterrows():
                 # Comparer le titre de l'image avec les valeurs de la colonne M
                 if titre_image[:CORRESPONDANCE] in str(row['Prompt_Midjourney']):
-                    if str(row['Commentaire']) == "-" :
-                        # Modifier le nom du fichier avec la valeur de la colonne L
-                        nouveau_nom = str(row['Prompt']) + ".png"
-                        # Renommer le fichier
-                        os.rename(chemin_fichier, os.path.join(dossier_images_renamed, nouveau_nom))
-                        #print(f"Le fichier {nom_fichier} a été renommé en {nouveau_nom}")
-                        BOUCLE +=1
-                        print(f"Ok pour {nouveau_nom}")
-                        break  # Arrêter la recherche après la première correspondance trouvée
-                    else :
-                        print(f"{titre_image} - {str(row['Commentaire'])} ")
+                    # Modifier le nom du fichier avec la valeur de la colonne L
+                    nouveau_nom = str(row['Nom NFT']) + ".png"
+                    # Renommer le fichier
+                    os.rename(chemin_fichier, os.path.join(dossier_images_renamed, nouveau_nom))
+                    #print(f"Le fichier {nom_fichier} a été renommé en {nouveau_nom}")
+                    BOUCLE +=1
+                    print(f"Ok pour {nouveau_nom}")
+                    break  # Arrêter la recherche après la première correspondance trouvée
+
         else :
             print(f"{nom_fichier} en DOUBLON")
             

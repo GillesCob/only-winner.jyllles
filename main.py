@@ -62,21 +62,22 @@ date_event = "March 1st"
 #-------------------------------------------------ELEMENTS EN ENTREE-------------------------------------------------#
 
 #----------------------FONCTIONS----------------------#
-def rename_prompt_to_midjourney(prompt_initial): #Modification du prompt pour correspondre au titre automatique lors de l'enregistrement d'une image Midjourney
-    prompt_midjourney = prompt_initial
+def rename_prompt_for_midjourney(name_NFT): #Modification du prompt pour correspondre au titre automatique lors de l'enregistrement d'une image Midjourney
+    prompt_midjourney = name_NFT
     prompt_midjourney = prompt_midjourney.replace(" ", "_")
     prompt_midjourney = prompt_midjourney.replace(",", "")
     prompt_midjourney = prompt_midjourney.replace("'", "")
     prompt_midjourney = prompt_midjourney.replace("(", "")
     prompt_midjourney = prompt_midjourney.replace(")", "")
     prompt_midjourney = prompt_midjourney.replace("ö", "o")
-    prompt_midjourney = prompt_midjourney.replace("ø", "o")
+    prompt_midjourney = prompt_midjourney.replace("ø", "")
     prompt_midjourney = prompt_midjourney.replace("ü", "u")
     prompt_midjourney = prompt_midjourney.replace("é", "e")
     prompt_midjourney = prompt_midjourney.replace("è", "e")
     prompt_midjourney = prompt_midjourney.replace("í", "i")
+    prompt_midjourney = prompt_midjourney.replace("ï", "i")
     prompt_midjourney = "jyllles_" + prompt_midjourney
-    one_winner_one_line['Prompt_Midjourney'] = prompt_midjourney
+    new_winners_one_sheet['Prompt_Midjourney'] = prompt_midjourney
     
     
 def winner_event_date_concordance(winner,date_event, url_event): #je créé winner-date. S'il est déjà dans la liste, j'append pour le montrer à la fin, sinon je l'ajoute dans la liste
@@ -85,8 +86,8 @@ def winner_event_date_concordance(winner,date_event, url_event): #je créé winn
         multiple_winnings_same_day_list.append(f"{winner_event_date_concordance} - {url_event}")
     winner_and_date_event_list.append(winner_event_date_concordance)
     
-def prompt_import_product(prompt_initial): #Je modifie le prompt initial pour qu'il corresponde à la remise en forme opérée par wordpress quand j'importe une image
-    prompt_for_import_product = prompt_initial
+def prompt_import_product(name_NFT): #Je modifie le prompt initial pour qu'il corresponde à la remise en forme opérée par wordpress quand j'importe une image
+    prompt_for_import_product = name_NFT
     prompt_for_import_product = prompt_for_import_product.replace("(", "")
     prompt_for_import_product = prompt_for_import_product.replace(")", "")
     prompt_for_import_product = prompt_for_import_product.replace(" ", "-")
@@ -219,7 +220,7 @@ except FileNotFoundError:
 for nom_nft in os.listdir(dossier_NFT):
     nom_nft = nom_nft[:-4]  # Retirer l'extension ".png"
     winners_with_nft_list.append(nom_nft)
-    
+        
 #Je charge l'Excel
 classeur = openpyxl.load_workbook(nom_excel_month)
 classeur_bdd_datas = openpyxl.load_workbook(nom_exel_bdd_datas)
@@ -574,21 +575,23 @@ if result.status_code == 200:
                                             date_event = "" #Avoir la date de la finale ne m'intéresse pas vu que l'équipe gagne une compétition de plusieurs jours
                                             winner_country = "/"
                                             city = ""
-                                            commentaire = "-"
                                             
-                                            one_winner_one_line = dictionary.add_to_dictionnary(EVENT_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event,prompt_initial, commentaire)
-                                            rename_prompt_to_midjourney(prompt_initial)#Modification de la variable pour le prompt Midjourney et envoi dans one_winner_one_line
-                                            all_month_winners_list.append(one_winner_one_line)
-
-                                            if prompt_initial not in winners_with_nft_list : #La carte n'est pas encore créée. j'envoi ces données dans la liste du jour
+                                            all_winners_one_sheet = dictionary.add_to_ALL(EVENT_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event,prompt_initial,actual_year)
+                                            all_month_winners_list.append(all_winners_one_sheet)
+                                            
+                                            name_NFT = f"{winner}-{event}-{date_event}-{actual_year}"
+                                            if name_NFT not in winners_with_nft_list : #La carte n'est pas encore créée. j'envoi ces données dans la liste du jour
                                                 EVENT_SPECIFIC_COUNTER +=1
-                                                one_winner_one_line['Nom image'] = f'Diapositive{EVENT_SPECIFIC_COUNTER}'
-                                                winners_without_nft_list.append(one_winner_one_line)
+                                                
+                                                new_winners_one_sheet = dictionary.add_to_today_sheet(EVENT_SPECIFIC_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event, prompt_initial,actual_year)
+                                                rename_prompt_for_midjourney(prompt_initial)
+                                                winners_without_nft_list.append(new_winners_one_sheet)
+                                                
                                                 #Je balance les éléments suivants dans le dictionnaire et sa fonction "import_wordpress"
                                                 prompt_for_import_product = prompt_import_product(prompt_initial)
                                                 short_winner = create_short_winner(winner)
-                                                data_for_wordpress = dictionary.import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,sport_event, prompt_for_import_product, actual_year, scrapping_month,prompt_initial, month_eng)
-                                                
+                                                data_for_wordpress = dictionary.import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,sport_event, prompt_for_import_product, actual_year, scrapping_month,prompt_initial, month_eng, date_event)
+                                                data_for_wordpress_list.append(data_for_wordpress)
                                                 #J'ai toutes les valeurs pour l'Excel, j'envoi les données du dictionnaire vers la liste qui servira à compléter l'Excel à la date du scrapping
                                                 data_for_wordpress_list.append(data_for_wordpress)
 
@@ -770,31 +773,27 @@ if result.status_code == 200:
                                                                 #ALERTE
                                                                 no_competition_of_sport_translation_list.append(f'{sport_competition} of {sport} - {url_event}')
 
-#TOUS LES ELEMENTS CI-DESSOUS SERVENT A LA CREATION DES DICTIONNAIRES PUIS A LA LISTE QUI SERVIRA A REMPLIR L'EXCEL
-# MAJ A METTRE EN PLACE AFIN DE PASSER ICI UNIQUEMENT SI UN NFT CONTENANT LE PROMPT N'A PAS ENCORE ETE CREE
-                                                    #Je créé les dictionnaires et tout le tralala
-                                                    commentaire = "-"
+
+
+
                                                     
-                                                    one_winner_one_line = dictionary.add_to_dictionnary(EVENT_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event, prompt_initial, commentaire)
-                                                    rename_prompt_to_midjourney(prompt_initial)
-                                                    all_month_winners_list.append(one_winner_one_line) #j'ajoute le dictionnaire à ma liste contenant tous les gagnants et leurs infos annexes
+                                                    all_winners_one_sheet = dictionary.add_to_ALL(competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event, prompt_initial,actual_year)
+                                                    all_month_winners_list.append(all_winners_one_sheet) #j'ajoute le dictionnaire à ma liste contenant tous les gagnants et leurs infos annexes
                                                     
-                                                    if prompt_initial not in winners_with_nft_list : #La carte n'est pas encore créée. j'envoi ces données dans la liste du jour
+                                                    name_NFT = f"{winner}-{sport_event}-{date_event}-{actual_year}"
+                                                    if name_NFT not in winners_with_nft_list : #La carte n'est pas encore créée. j'envoi ces données dans la liste du jour
                                                         EVENT_SPECIFIC_COUNTER +=1
-                                                        one_winner_one_line['Nom image'] = f'Diapositive{EVENT_SPECIFIC_COUNTER}'
-                                                        winners_without_nft_list.append(one_winner_one_line)
+                                                        new_winners_one_sheet = dictionary.add_to_today_sheet(EVENT_SPECIFIC_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event, prompt_initial, actual_year)
+                                                        rename_prompt_for_midjourney(prompt_initial)
+                                                        winners_without_nft_list.append(new_winners_one_sheet)
+                                                        
                                                         #Je balance les éléments suivants dans le dictionnaire et sa fonction "import_wordpress"
                                                         prompt_for_import_product = prompt_import_product(prompt_initial)
                                                         short_winner = create_short_winner(winner)
-                                                        data_for_wordpress = dictionary.import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,sport_event, prompt_for_import_product, actual_year, scrapping_month,prompt_initial, month_eng)
-                                                        
-                                                        #J'ai toutes les valeurs pour l'Excel, j'envoi les données du dictionnaire vers la liste qui servira à compléter l'Excel à la date du scrapping
+                                                        data_for_wordpress = dictionary.import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,sport_event, prompt_for_import_product, actual_year, scrapping_month,prompt_initial, month_eng, date_event)
                                                         data_for_wordpress_list.append(data_for_wordpress)
                                                     
             
-                                          
-                                                    
-                                                    
                                                 else:
                                                     pass #Si j'atterris ici j'ai déjà eu une alerte via : print(f"Je n'ai pas de gagnant identifiable : {url_event}")
                                                 
@@ -863,6 +862,7 @@ if result.status_code == 200:
     
     if no_competition_of_sport_translation_list :
         print("\033[4m" +'Pas de traduction de competition of sport ? Ajouter dans feuille "COMP OD SPORT" : ' + "\033[0m", end="")
+        print()
         for no_competition_of_sport_translation in no_competition_of_sport_translation_list:
             print(f" - {no_competition_of_sport_translation}")
         print(f'-------------------------')

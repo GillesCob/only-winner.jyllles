@@ -1,7 +1,23 @@
 
-def add_to_dictionnary (EVENT_COUNTER,competition_date,country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event,prompt_initial, commentaire):
+def add_to_ALL (competition_date,country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event,prompt_initial, actual_year):
     return {
-        'Nom image' : f'Diapositive{EVENT_COUNTER}',
+        'Date_competition' : competition_date,
+        'Pays' : country,
+        'Ville' : city,
+        'Sport' : sport,
+        'Competition' : sport_competition,
+        'Epreuve' : sport_event,
+        'Date_épreuve' : date_event,
+        'Gagnant' : winner,
+        'Gagnant_Pays' : winner_country,
+        "Prompt" : prompt_initial,
+        "Nom NFT" : f"{winner}-{sport_event}-{date_event}-{actual_year}",
+        'Lien' : url_event,
+        }
+
+def add_to_today_sheet (EVENT_SPECIFIC_COUNTER,competition_date,country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event,prompt_initial, actual_year):
+    return {
+        'Diapositive name' : f"Diapositive{EVENT_SPECIFIC_COUNTER}",
         'Date_competition' : competition_date,
         'Pays' : country,
         'Ville' : city,
@@ -13,14 +29,14 @@ def add_to_dictionnary (EVENT_COUNTER,competition_date,country,city,sport,sport_
         'Gagnant_Pays' : winner_country,
         'Lien' : url_event,
         "Prompt" : prompt_initial,
-        "Commentaire" : commentaire,
+        "Nom NFT" : f"{winner}-{sport_event}-{date_event}-{actual_year}",
         }
 
-def import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,sport_event, prompt_for_import_product, actual_year, actual_month,prompt_initial, month_eng):
+def import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,sport_event, prompt_for_import_product, actual_year, actual_month,prompt_initial, month_eng,date_event):
     return {
     'ID' : f"{EVENT_COUNTER}",
     'Type' : "external",
-    'SKU' : f"Carte-{actual_month}-{actual_year}-{EVENT_COUNTER}",
+    'SKU' : f"Carte-{winner}-{sport_event}-{date_event}-{actual_year}",
     'Name' : short_winner,
     'Published' : "1",
     'Is featured?' : "0",

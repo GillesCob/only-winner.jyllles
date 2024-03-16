@@ -141,7 +141,6 @@ def create_short_winner(winner): #Diminuer le nombre de caractères afin d'avoir
 #----------------------VARIABLES INITIALES----------------------#
 
 actual_year = str(datetime.now().year)
-actual_day = str(datetime.now().day)
 url = "https://www.les-sports.info/calendrier-sport-2024-p0-62024.html"
 midjourney_parameters = ",oil painting style, colorful lighting,--ar 1:1 --c 100 --s 965 --v 5.1"
 COMPETITION_COUNTER = 0
@@ -177,9 +176,6 @@ data_for_wordpress_list = [] #Liste de toutes les infos pour l'import Product su
 winner_and_date_event_list = [] #j'ajoute dans cette liste les athlètes ayant gagné plusieurs fois le même jour
 
 events_ok_list = [] #Liste des events passés par les différents tamis
-
-event_number_list = [] #Plusieurs fois le même numéro d'event ?
-occurence_event_number = {}
 
 #----------------------LISTES TRADUCTIONS FR EN----------------------#
 competition_of_sport_list = [] #De manière bête et méchante je vais ajouter dans cette liste {competition} of {sport}
@@ -412,26 +408,16 @@ if result.status_code == 200:
                             else:
                                 sport_competition = f'{sport_competition} A AJOUTER !! - {url_event}'
 
-                            #J'ai pour le moment récupéré les informations suivantes : 
-                            #     Date de la competition : competition_date,
-                            #     Pays de la competition : competition_country,
-                            #     Ville de la competition : city,
-                            #     Sport : sport,
-                            #     Nom de la competition : sport_competition,
 
 #-----------------------Je vais maintenant dans les pages des compétitions
                         sport_event_link = event_informations[2].select_one('a')['href'] if len(event_informations) > 2 and event_informations[2].select_one('a') else None
                         
-                        #Intervertir les coms ci-dessous pour faire du scrapping sur une seule page
                         sport_event_link_text = "https://www.les-sports.info/" + sport_event_link if sport_event_link else None
-                        #sport_event_link_text = "https://www.les-sports.info/biathlon-coupe-du-monde-femmes-oberhof-resultats-2023-2024-epr131913.html"
                         
                         if "hommes-epm" in sport_event_link_text :
                             url_event_hommes = sport_event_link_text
                             url_event_femmes = sport_event_link_text.replace("hommes-epm", "femmes-epf")
                             url_event_mixte = sport_event_link_text.replace("hommes-epm", "mixte-epi")
-                            #https://www.les-sports.info/cyclo-cross-championnats-de-belgique-resultats-2023-2024-hommes-epm130376.html
-                            #https://www.les-sports.info/cyclo-cross-championnats-de-belgique-resultats-2023-2024-femmes-epf130376.html
                         else:
                             url_event_hommes = sport_event_link_text
                             url_event_femmes = ""
@@ -512,12 +498,10 @@ if result.status_code == 200:
                                             Good_event_eng = EN_Event[index_event] #ATTENTION il faut 1 valeur dans chaque case sinon tout se décale
                                             if len(Good_event) == 2: #Je passe ici si la seule correspondance concerne le sexe du compétiteur
                                                 just_men_or_women_list.append(f'{specific_event_title} - {url_event}"')
-                                                #print(f'ATTENTION ! - "{specific_event_title}" devient "{Good_event_eng} - {url_event}"') #Soit l'event ne contient que Hommes/Femmes soit il contient aussi un event non présent dans la traduction. LAISSER LE PRINT ACTIF !! 
                                             sport_event = Good_event_eng
                                         else: #L'épreuve ne fait pas partie de la liste acceptée car traduction non fournie encore
                                             events_ok_list.remove(specific_event_title)
                                             no_event_translation_list.append(f"{specific_event_title}")
-                                            #print(f'AJOUTER EPREUVE (COL C) pour : "{specific_event_title}" puis relancer')
                                             
                                             
                     #---------------2ème traduction : Je vais traduire chaque date d'event. BDD des dates dans l'Excel (feuille Data, cf #3 en dfébut de code)
@@ -561,7 +545,6 @@ if result.status_code == 200:
                                                     j = competition_of_sport_list.index(competition_of_sport)
                                                     competition_of_sport_traduction_value = competition_of_sport_traduction[j]
                                                     winner_event_date_concordance(winner,date_event, url_event) #Je vérifie si l'équipe a gagné plusieurs titres le même jour
-                                                    event_number_list.append(EVENT_COUNTER) #Je vérifie si je n'ai pas plusieurs fois le même n° d'event
                                                     prompt_initial = f'{winner} wins the {competition_of_sport_traduction_value} in {competition_country}'
                                                 else:
                                                     no_competition_of_sport_translation_list.append(f'{sport_competition} of {sport} - {url_event}') #J'ajoute un message final pour rajouter comp of sport dans ma liste Excel
@@ -583,18 +566,20 @@ if result.status_code == 200:
                                             if name_NFT not in winners_with_nft_list : #La carte n'est pas encore créée. j'envoi ces données dans la liste du jour
                                                 EVENT_SPECIFIC_COUNTER +=1
                                                 
-                                                new_winners_one_sheet = dictionary.add_to_today_sheet(EVENT_SPECIFIC_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event, prompt_initial,actual_year)
-                                                rename_prompt_for_midjourney(prompt_initial)
-                                                winners_without_nft_list.append(new_winners_one_sheet)
-                                                
-                                                #Je balance les éléments suivants dans le dictionnaire et sa fonction "import_wordpress"
-                                                prompt_for_import_product = prompt_import_product(prompt_initial)
-                                                short_winner = create_short_winner(winner)
-                                                data_for_wordpress = dictionary.import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,sport_event, prompt_for_import_product, actual_year, scrapping_month,prompt_initial, month_eng, date_event)
-                                                data_for_wordpress_list.append(data_for_wordpress)
-                                                #J'ai toutes les valeurs pour l'Excel, j'envoi les données du dictionnaire vers la liste qui servira à compléter l'Excel à la date du scrapping
-                                                data_for_wordpress_list.append(data_for_wordpress)
-
+                                                date_number = re.search(r'\d+', date_event)
+                                                date_number_int = int(date_number.group())
+                                                if date_number_int <= actual_day :
+                                                    new_winners_one_sheet = dictionary.add_to_today_sheet(EVENT_SPECIFIC_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event, prompt_initial,actual_year)
+                                                    rename_prompt_for_midjourney(prompt_initial)
+                                                    winners_without_nft_list.append(new_winners_one_sheet)
+                                                    
+                                                    #Je balance les éléments suivants dans le dictionnaire et sa fonction "import_wordpress"
+                                                    prompt_for_import_product = prompt_import_product(prompt_initial)
+                                                    short_winner = create_short_winner(winner)
+                                                    data_for_wordpress = dictionary.import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,sport_event, prompt_for_import_product, actual_year, scrapping_month,prompt_initial, month_eng, date_event)
+                                                    data_for_wordpress_list.append(data_for_wordpress)
+                                                    #J'ai toutes les valeurs pour l'Excel, j'envoi les données du dictionnaire vers la liste qui servira à compléter l'Excel à la date du scrapping
+                                                    data_for_wordpress_list.append(data_for_wordpress)
 
                                         else:
                                             date_number = re.search(r'\d+', date_event)
@@ -645,7 +630,6 @@ if result.status_code == 200:
                                                 first_row_infos = sportsmen_table[0]
                                                 solo_winner = None #Je remets à zéro au cas où
                                                 team_winner = None #Je remets à zéro au cas où
-                                                
                                                 solo_winner = first_row_infos.find('a', class_='nodecort') #Si j'ai un gagnant seul, class = nodecort
                                                 team_winner = first_row_infos.find(class_='tdcol-70') #Si j'ai plusieurs gagnants, class = tdcol-70
                                                 
@@ -700,10 +684,8 @@ if result.status_code == 200:
                                                         winner_country = "?"
                                                         winner_country_info = False
                                                         #print(f"Diapositive_{EVENT_COUNTER+1} - Je n'ai pas la nationalité dans le site. Trouver un moyen à terme (en attendant prompt sans nationalité : {url_event}")
-
                                                     
                                                     EVENT_COUNTER +=1
-                                                    
                                                     sport_competition = sport_competition.strip()
                                                     sport = sport.strip()
                                                     competition_of_sport = f"{sport_competition} of {sport}"
@@ -716,11 +698,9 @@ if result.status_code == 200:
                                                                 competition_of_sport_traduction_value = competition_of_sport_traduction[j]
                                                                 prompt_initial = f'{winner} ({winner_country}) wins the {sport_event} {competition_of_sport_traduction_value} in {competition_country} on {date_event}'
                                                                 winner_event_date_concordance(winner,date_event, url_event)
-                                                                event_number_list.append(EVENT_COUNTER)
                                                             else:
                                                                 prompt_initial = 'Pas de prompt' #Je dois avoir une formulation de prompt nickel
                                                                 winner_event_date_concordance(winner,date_event, url_event)
-                                                                event_number_list.append(EVENT_COUNTER)
                                                                 
                                                                 #ALERTE
                                                                 no_competition_of_sport_translation_list.append(f'{sport_competition} of {sport} - {url_event}')
@@ -731,11 +711,9 @@ if result.status_code == 200:
                                                                 competition_of_sport_traduction_value = competition_of_sport_traduction[j]
                                                                 prompt_initial = f'{winner} ({winner_country}) wins the {sport_event} {competition_of_sport_traduction_value} in {city}, {competition_country} on {date_event}'
                                                                 winner_event_date_concordance(winner,date_event, url_event)
-                                                                event_number_list.append(EVENT_COUNTER)
                                                             else:
                                                                 prompt_initial = 'Pas de prompt' #Je dois avoir une formulation de prompt nickel
                                                                 winner_event_date_concordance(winner,date_event, url_event)
-                                                                event_number_list.append(EVENT_COUNTER)
                                                                 
                                                                 #ALERTE
                                                                 no_competition_of_sport_translation_list.append(f'{sport_competition} of {sport} - {url_event}')
@@ -748,11 +726,9 @@ if result.status_code == 200:
                                                                 competition_of_sport_traduction_value = competition_of_sport_traduction[j]
                                                                 prompt_initial = f'{winner} wins the {sport_event} {competition_of_sport_traduction_value} in {competition_country} on {date_event}'
                                                                 winner_event_date_concordance(winner,date_event, url_event)
-                                                                event_number_list.append(EVENT_COUNTER)
                                                             else:
                                                                 prompt_initial = 'Pas de prompt' #Je dois avoir une formulation de prompt nickel
                                                                 winner_event_date_concordance(winner,date_event, url_event)
-                                                                event_number_list.append(EVENT_COUNTER)
                                                                 
                                                                 #ALERTE
                                                                 no_competition_of_sport_translation_list.append(f'{sport_competition} of {sport} - {url_event}')
@@ -764,34 +740,32 @@ if result.status_code == 200:
                                                                 competition_of_sport_traduction_value = competition_of_sport_traduction[j]
                                                                 prompt_initial = f'{winner} wins the {sport_event} {competition_of_sport_traduction_value} in {city}, {competition_country} on {date_event}'
                                                                 winner_event_date_concordance(winner,date_event, url_event)
-                                                                event_number_list.append(EVENT_COUNTER)
                                                             else:
                                                                 prompt_initial = 'Pas de prompt' #Je dois avoir une formulation de prompt nickel
                                                                 winner_event_date_concordance(winner,date_event, url_event)
-                                                                event_number_list.append(EVENT_COUNTER)
                                                                 
                                                                 #ALERTE
                                                                 no_competition_of_sport_translation_list.append(f'{sport_competition} of {sport} - {url_event}')
 
-
-
-
-                                                    
                                                     all_winners_one_sheet = dictionary.add_to_ALL(competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event, prompt_initial,actual_year)
                                                     all_month_winners_list.append(all_winners_one_sheet) #j'ajoute le dictionnaire à ma liste contenant tous les gagnants et leurs infos annexes
                                                     
                                                     name_NFT = f"{winner}-{sport_event}-{date_event}-{actual_year}"
                                                     if name_NFT not in winners_with_nft_list : #La carte n'est pas encore créée. j'envoi ces données dans la liste du jour
                                                         EVENT_SPECIFIC_COUNTER +=1
-                                                        new_winners_one_sheet = dictionary.add_to_today_sheet(EVENT_SPECIFIC_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event, prompt_initial, actual_year)
-                                                        rename_prompt_for_midjourney(prompt_initial)
-                                                        winners_without_nft_list.append(new_winners_one_sheet)
                                                         
-                                                        #Je balance les éléments suivants dans le dictionnaire et sa fonction "import_wordpress"
-                                                        prompt_for_import_product = prompt_import_product(prompt_initial)
-                                                        short_winner = create_short_winner(winner)
-                                                        data_for_wordpress = dictionary.import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,sport_event, prompt_for_import_product, actual_year, scrapping_month,prompt_initial, month_eng, date_event)
-                                                        data_for_wordpress_list.append(data_for_wordpress)
+                                                        date_number = re.search(r'\d+', date_event)
+                                                        date_number_int = int(date_number.group())
+                                                        if date_number_int <= actual_day :
+                                                            new_winners_one_sheet = dictionary.add_to_today_sheet(EVENT_SPECIFIC_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event, prompt_initial, actual_year)
+                                                            rename_prompt_for_midjourney(prompt_initial)
+                                                            winners_without_nft_list.append(new_winners_one_sheet)
+                                                            
+                                                            #Je balance les éléments suivants dans le dictionnaire et sa fonction "import_wordpress"
+                                                            prompt_for_import_product = prompt_import_product(prompt_initial)
+                                                            short_winner = create_short_winner(winner)
+                                                            data_for_wordpress = dictionary.import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,sport_event, prompt_for_import_product, actual_year, scrapping_month,prompt_initial, month_eng, date_event)
+                                                            data_for_wordpress_list.append(data_for_wordpress)
                                                     
             
                                                 else:
@@ -800,14 +774,13 @@ if result.status_code == 200:
                                             else:
                                                 date_number = re.search(r'\d+', date_event)
                                                 date_number_int = int(date_number.group())
-                                                if date_number_int > verif_date_event :
+                                                if date_number_int > actual_day :
                                                         #L'event n'a pas encore eu lieu. Pas de soucis et je ne print rien pour ne pas me polluer'
                                                         winner = None
                                                 else:
                                                     winner = None
                                                     #La date de l'event est antérieur à la date du scrapping. Potentiel soucis
                                                     no_winner_identified_list.append(f"{url_event}")
-                                                    #print(f"ATTENTION : Pas de gagnant identifié - {url_event}")
 
                                     pause = random.randrange(1, 3)
                                     time.sleep(pause)   
@@ -825,19 +798,6 @@ if result.status_code == 200:
         else:
             pass #On fait quoi si on est pas au actual month ? Bah rien on sort de la boucle et on arrête
 
-
-#Je vérifie si je n'ai pas plusieurs fois le même numéro pour plusieurs events
-    for number in event_number_list:
-        if number in occurence_event_number:
-            occurence_event_number[number] += 1
-        else:
-            occurence_event_number[number] = 1
-
-# Parcourir le dictionnaire pour trouver les valeurs en double et les imprimer
-    for number, nombre_occurrences in occurence_event_number.items():
-        if nombre_occurrences > 1:
-            print("La valeur", number, "apparaît ", nombre_occurrences, "fois dans la liste.")
-    print(f"{len(event_number_list)} épreuves ajoutées dans l'Excel")
 
 #J'imprime en fin de scrapping toutes les erreures ensembles par catégorie afin de faciliter la lecture
     print()
@@ -913,13 +873,12 @@ if result.status_code == 200:
         print()
 
 #Création de l'Excel
+    actual_day = str(actual_day)
     # Créer un DataFrame pandas à partir de la liste d'événements
-    #df = pd.DataFrame(competition_list)
     df1 = pd.DataFrame(all_month_winners_list)
     df2 = pd.DataFrame(winners_without_nft_list)
     df3 = pd.DataFrame(data_for_wordpress_list)
 
-    # Ajouter la nouvelle feuille si le fichier existe déjà
     with pd.ExcelWriter(nom_excel_month, engine='openpyxl', mode='a') as writer:
         try:
             writer.book.remove(writer.book["ALL"])
@@ -936,7 +895,6 @@ if result.status_code == 200:
         except KeyError:
             pass
 
-                
         df1.to_excel(writer, sheet_name=f"ALL", index=False)
         df2.to_excel(writer, sheet_name=actual_day, index=False)
         df3.to_excel(writer, sheet_name="Data for WP", index=False)

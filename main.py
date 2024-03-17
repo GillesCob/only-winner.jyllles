@@ -76,6 +76,7 @@ def rename_prompt_for_midjourney(name_NFT): #Modification du prompt pour corresp
     prompt_midjourney = prompt_midjourney.replace("è", "e")
     prompt_midjourney = prompt_midjourney.replace("í", "i")
     prompt_midjourney = prompt_midjourney.replace("ï", "i")
+    prompt_midjourney = prompt_midjourney.replace("á", "a")
     prompt_midjourney = "jyllles_" + prompt_midjourney
     new_winners_one_sheet['Prompt_Midjourney'] = prompt_midjourney
     
@@ -558,25 +559,26 @@ if result.status_code == 200:
                                             date_event = "" #Avoir la date de la finale ne m'intéresse pas vu que l'équipe gagne une compétition de plusieurs jours
                                             winner_country = "/"
                                             city = ""
+                                            winner_len = len(winner)
                                             
-                                            all_winners_one_sheet = dictionary.add_to_ALL_sheet(EVENT_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event,prompt_initial,actual_year)
+                                            all_winners_one_sheet = dictionary.add_to_ALL_sheet(EVENT_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event,prompt_initial,actual_year,winner_len)
                                             all_month_winners_list.append(all_winners_one_sheet)
                                             
-                                            name_NFT = f"{winner}-{event}-{date_event}-{actual_year}"
+                                            name_NFT = f"{winner_len}-{event}-{date_event}-{actual_year}"
                                             if name_NFT not in winners_with_nft_list : #La carte n'est pas encore créée. j'envoi ces données dans la liste du jour
                                                 EVENT_SPECIFIC_COUNTER +=1
                                                 
                                                 date_number = re.search(r'\d+', date_event)
                                                 date_number_int = int(date_number.group())
                                                 if date_number_int <= actual_day :
-                                                    new_winners_one_sheet = dictionary.add_to_today_sheet(EVENT_SPECIFIC_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event, prompt_initial,actual_year)
+                                                    new_winners_one_sheet = dictionary.add_to_today_sheet(EVENT_SPECIFIC_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event, prompt_initial,actual_year,winner_len)
                                                     rename_prompt_for_midjourney(prompt_initial)
                                                     winners_without_nft_list.append(new_winners_one_sheet)
                                                     
                                                     #Je balance les éléments suivants dans le dictionnaire et sa fonction "import_wordpress"
                                                     prompt_for_import_product = prompt_import_product(prompt_initial)
                                                     short_winner = create_short_winner(winner)
-                                                    data_for_wordpress = dictionary.import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,sport_event, prompt_for_import_product, actual_year, scrapping_month,prompt_initial, month_eng, date_event)
+                                                    data_for_wordpress = dictionary.import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,sport_event, prompt_for_import_product, actual_year, scrapping_month,prompt_initial, month_eng, date_event,winner_len)
                                                     data_for_wordpress_list.append(data_for_wordpress)
                                                     #J'ai toutes les valeurs pour l'Excel, j'envoi les données du dictionnaire vers la liste qui servira à compléter l'Excel à la date du scrapping
                                                     data_for_wordpress_list.append(data_for_wordpress)
@@ -747,24 +749,26 @@ if result.status_code == 200:
                                                                 #ALERTE
                                                                 no_competition_of_sport_translation_list.append(f'{sport_competition} of {sport} - {url_event}')
 
-                                                    all_winners_one_sheet = dictionary.add_to_ALL_sheet(competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event, prompt_initial,actual_year)
+                                                    winner_len = len(winner)
+                                                    all_winners_one_sheet = dictionary.add_to_ALL_sheet(competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event, prompt_initial,actual_year,winner_len)
                                                     all_month_winners_list.append(all_winners_one_sheet) #j'ajoute le dictionnaire à ma liste contenant tous les gagnants et leurs infos annexes
                                                     
-                                                    name_NFT = f"{winner}-{sport_event}-{date_event}-{actual_year}"
+                                                    winner_len = len(winner)
+                                                    name_NFT = f"{winner_len}-{sport_event}-{date_event}-{actual_year}"
                                                     if name_NFT not in winners_with_nft_list : #La carte n'est pas encore créée. j'envoi ces données dans la liste du jour
                                                         EVENT_SPECIFIC_COUNTER +=1
                                                         
                                                         date_number = re.search(r'\d+', date_event)
                                                         date_number_int = int(date_number.group())
                                                         if date_number_int <= actual_day :
-                                                            new_winners_one_sheet = dictionary.add_to_today_sheet(EVENT_SPECIFIC_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event, prompt_initial, actual_year)
+                                                            new_winners_one_sheet = dictionary.add_to_today_sheet(EVENT_SPECIFIC_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event, prompt_initial, actual_year,winner_len)
                                                             rename_prompt_for_midjourney(prompt_initial)
                                                             winners_without_nft_list.append(new_winners_one_sheet)
                                                             
                                                             #Je balance les éléments suivants dans le dictionnaire et sa fonction "import_wordpress"
-                                                            prompt_for_import_product = prompt_import_product(prompt_initial)
+                                                            prompt_for_import_product = prompt_import_product(name_NFT)
                                                             short_winner = create_short_winner(winner)
-                                                            data_for_wordpress = dictionary.import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,sport_event, prompt_for_import_product, actual_year, scrapping_month,prompt_initial, month_eng, date_event)
+                                                            data_for_wordpress = dictionary.import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,sport_event, prompt_for_import_product, actual_year, scrapping_month,prompt_initial, month_eng, date_event,winner_len)
                                                             data_for_wordpress_list.append(data_for_wordpress)
                                                     
             

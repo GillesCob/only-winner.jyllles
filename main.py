@@ -177,6 +177,7 @@ data_for_wordpress_list = [] #Liste de toutes les infos pour l'import Product su
 winner_and_date_event_list = [] #j'ajoute dans cette liste les athlètes ayant gagné plusieurs fois le même jour
 
 events_ok_list = [] #Liste des events passés par les différents tamis
+all_events_in_page_list = [] #Je mets les events de nomargin et centre
 
 #----------------------LISTES TRADUCTIONS FR EN----------------------#
 competition_of_sport_list = [] #De manière bête et méchante je vais ajouter dans cette liste {competition} of {sport}
@@ -408,6 +409,20 @@ if result.status_code == 200:
                                 
                             else:
                                 sport_competition = f'{sport_competition} A AJOUTER !! - {url_event}'
+                                
+                                
+                                    # all_events_in_nomargin = all_competition.select(".nomargin a")
+                                    # for event_in_margin in all_events_in_nomargin :
+                                    #     if event_in_margin:
+                                    #         all_events_in_page_list.append(event_in_margin)
+                                    
+                                    # if all_events_in_nomargin :
+                                    #     pass
+                                    # else :
+                                    #     all_events_in_centre = all_competition.select(".tab_content h2.centre")
+                                    #     for event_in_centre in all_events_in_centre:
+                                    #         if event_in_centre:
+                                    #             all_events_in_page_list.append(event_in_centre)
 
 
 #-----------------------Je vais maintenant dans les pages des compétitions
@@ -438,10 +453,15 @@ if result.status_code == 200:
                                     team_competition = None #Remise à zéro
                                     team_competition = all_competition.select(".h3-vainqueur")
                                     
-            #-----------------------Si l'event est à destination d'individualités / groupe d'individualités, la valeur se trouve dans une balise "nomargin".
+            #-----------------------Si l'event est à destination d'individualités / groupe d'individualités, la valeur se trouve dans une balise "nomargin" ou "centre"
                                     events_ok_list.clear()
                                     all_events_in_page = None #Remise à zéro
+                                    
                                     all_events_in_page = all_competition.select(".nomargin a")
+                                    if all_events_in_page or team_competition :
+                                        pass
+                                    else:
+                                        all_events_in_page = all_competition.select(".tab_content h2.centre")
                                     
                                     
                 #-------------------Je vais maintenant devoir faire de nombreux tris afin de faciliter la suite
@@ -814,6 +834,7 @@ if result.status_code == 200:
     
     if no_city_list :
         print("\033[4m" + 'Compétition sans ville ? Ajouter dans feuille "CITY" : ' + "\033[0m", end="")
+        print()
         for no_city in no_city_list:
             print(f" - {no_city}")
         print(f'-------------------------')
@@ -821,6 +842,7 @@ if result.status_code == 200:
     
     if no_winner_identified_list :
         print("\033[4m" + "Pas de gagnant identifié alors que l'épreuve est déjà passée : " + "\033[0m", end="")
+        print()
         for no_winner_identified in no_winner_identified_list:
             print(f" - {no_winner_identified}")
         print(f'-------------------------')
@@ -836,6 +858,7 @@ if result.status_code == 200:
     
     if no_event_translation_list :
         print("\033[4m" + "Pas de traduction de l'épreuve ? Ajouter dans feuille 'EVENT' : " + "\033[0m", end="")
+        print()
         for no_event_translation in no_event_translation_list:
             print(f" - {no_event_translation}")
         print(f'-------------------------')
@@ -850,6 +873,7 @@ if result.status_code == 200:
         
     if no_country_translation_list:
         print("\033[4m" + "Pas de traduction du pays ? Ajouter dans feuille 'COUNTRY' : " + "\033[0m", end="")
+        print()
         for country_without_translation in no_country_translation_list:
             print(f" - {country_without_translation}")
         print(f'-------------------------')
@@ -857,6 +881,7 @@ if result.status_code == 200:
         
     if no_abr_translation_list:
         print("\033[4m" + "Pas de traduction de l'abréviation d'un pays ? Ajouter dans feuille 'ABREVIATION' : " + "\033[0m", end="")
+        print()
         for abr_translation in no_abr_translation_list:
             print(f" - {abr_translation}")
         print(f'-------------------------')
@@ -864,19 +889,20 @@ if result.status_code == 200:
         
     if multiple_winnings_same_day_list :
         print("\033[4m" + "Ces athlètes ont remporté plusieurs épreuves le même jour : " + "\033[0m", end="")
+        print()
         for winnings_same_day in multiple_winnings_same_day_list:
             print(f" - {winnings_same_day}")
         print(f'-------------------------')
         print()
 
-    if winners_without_nft_list :
-        print("\033[4m" + "Voici les prompts pour créer les images sur Midjourney des derniers vainqueurs identifiés " + "\033[0m", end="")
-        print()
-        for winner_without_nft_list in winners_without_nft_list:
-            print()
-            print(f"{winner_without_nft_list['Prompt']} {midjourney_parameters}")
-        print(f'--------------------------------------------------')
-        print()
+    # if winners_without_nft_list :
+    #     print("\033[4m" + "Voici les prompts pour créer les images sur Midjourney des derniers vainqueurs identifiés " + "\033[0m", end="")
+    #     print()
+    #     for winner_without_nft_list in winners_without_nft_list:
+    #         print()
+    #         print(f"{winner_without_nft_list['Prompt']} {midjourney_parameters}")
+    #     print(f'--------------------------------------------------')
+    #     print()
 
 #Création de l'Excel
     actual_day = str(actual_day)

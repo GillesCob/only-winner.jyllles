@@ -198,8 +198,6 @@ no_date_event_list = []
 
 no_winner_identified_list  = []
 
-no_event_translation_list = []
-no_country_translation_list = []
 no_abr_translation_list = []
 just_men_or_women_list = []
 recents_winners_prompt_list = []
@@ -513,7 +511,7 @@ if result.status_code == 200:
                                                         no_competition_of_sport_list.append(f'{sport_competition} of {sport} - {url_event}') #J'ajoute un message final pour rajouter comp of sport dans ma liste Excel
                                                         
                                                 else: #Pas de traduction pour le pays gagnant donc les infos ne sont pas intégrées à l'excel
-                                                    no_country_translation_list.append(f"{winning_team_name} - {url_event}")
+                                                    no_country_list.append(f"{winning_team_name} - {url_event}")
 
                                             else:
                                                 print(f"{winning_team} est None - {url_event }")
@@ -562,68 +560,39 @@ if result.status_code == 200:
                                                         pass #Pas d'event dans un toggle "Résultat détaillé"
                                             else:
                                                 print(f'Aucun event dans la page : {url_event}')
-                                            
-                    #-------------------Le site de scrapping est en Français et chaque titre d'event contient en général l'event + sa date. Itération dans la liste puis traduction séparée pour les deux infos
-                                        for specific_event_title_index, specific_event_title in enumerate(events_ok_list,start=1):
-
-                        #---------------1ère traduction : Je vais traduire chaque event. BDD des events dans l'Excel (feuille Data, cf #3 en dfébut de code)
-                                            event_matches = [Event for Event in FR_Event if Event.lower() in specific_event_title.lower()]
-                                            
-                                            if event_matches: #Si l'épreuve fait partie de la liste des events en français
-                                                Good_event = max(event_matches, key=len) #Je prends la plus longue correspondance s'il y en a plusieurs
-                                                index_event = FR_Event.index(Good_event)
-                                                sport_event = EN_Event[index_event]
                                                 
-                                                if len(Good_event) == 2: #J'ai créé 1 event ho et 1 event fe (donc si ==2 c'est qu'on a que homme ou femme comme info pour l'event ou bien que l'event n'est pas traduit)
-                                                    no_event_list.append(f'{specific_event_title} - {url_event}"')
-                                                
-                                            else: #L'épreuve ne fait pas partie de la liste acceptée car traduction non fournie encore
-                                                events_ok_list.remove(specific_event_title) #Retirée de la liste des events ok, devra être traduit si on veut son ajout dans l'Excel
-                                                no_event_list.append(f"{specific_event_title} - {url_event}")
-                                                
-                                                
-                        #---------------2ème traduction : Je vais traduire chaque date d'event
-                                            date_matches = [Date for Date in FR_Date if Date.lower() in specific_event_title.lower()]
-                                            if date_matches:
-                                                Good_date = max(date_matches, key=len)
-                                                date_event = Good_date
-                                                index_date = FR_Date.index(date_event)
-                                                Good_date_eng = EN_Date[index_date]
-                                                date_event = Good_date_eng
-                                            else:
-                                                no_date_event_list.append(f"{specific_event_title} - {url_event}")
-
         
+                                        #J'ai identifié les events à prendre en compte
                                         for event_in_page_index, event_in_page in enumerate(all_events_in_page,start=1): #Je dois reprendre les données sur toute la page et non pas repartir de la liste des events
-                                            
                                             if event_in_page.text in events_ok_list : #Je vérifie par contre tout de suite pour ne continuer qu'avec les events passés par les tamis
                                                 sportsmen_table = event_in_page.find_all_next('table', class_='table-style-2', limit=1)
                                                 specific_event_title = event_in_page.text
                                                 
-                        #-----------------------Obligé pour le moment de re-traduire. A voir comment optimiser plus tard
+                                                
+                                                #Je prends le titre d'event et je cherche un event présent dans ma BDD INITIALE
                                                 event_matches = [Event for Event in FR_Event if Event.lower() in specific_event_title.lower()]
-                                            
                                                 if event_matches: #Si l'épreuve fait partie de la liste des events en français
                                                     Good_event = max(event_matches, key=len) #Je prends la plus longue correspondance s'il y en a plusieurs
-                                                    sport_event = Good_event
-                                                    index_event = FR_Event.index(sport_event)
-                                                    Good_event_eng = EN_Event[index_event] #ATTENTION il faut 1 valeur dans chaque case sinon tout se décale
-                                                    sport_event = Good_event_eng
-                                                else:
-                                                    print(f"L'event ne match pas avec ceux présents dans la feuille EVENT") #A voir si un print final est nécessaire
-                        #-----------------------Optimiser cette partie du code
+                                                    index_event = FR_Event.index(Good_event)
+                                                    sport_event = EN_Event[index_event] #ATTENTION il faut 1 valeur dans chaque case sinon tout se décale
+                                                    
+                                                    if len(Good_event) == 2: #J'ai créé 1 event ho et 1 event fe (donc si ==2 c'est qu'on a que homme ou femme comme info pour l'event ou bien que l'event n'est pas traduit)
+                                                        no_event_list.append(f'{specific_event_title} - {url_event}"')
+                                                
+                                                else: #L'épreuve ne fait pas partie de la liste acceptée car traduction non fournie encore
+                                                    events_ok_list.remove(specific_event_title) #Retirée de la liste des events ok, devra être traduit si on veut son ajout dans l'Excel
+                                                    no_event_list.append(f"{specific_event_title} - {url_event}")
+                                                    
                         
-                    #-----------------------Idem pour la date. A voir comment optimiser plus tard
+                                                #Je prends le titre d'event et je cherche une date présente dans ma BDD INITIALE
                                                 date_matches = [Date for Date in FR_Date if Date.lower() in specific_event_title.lower()]
                                                 if date_matches:
                                                     Good_date = max(date_matches, key=len)
-                                                    date_event = Good_date
-                                                    index_date = FR_Date.index(date_event)
-                                                    Good_date_eng = EN_Date[index_date]
-                                                    date_event = Good_date_eng
+                                                    index_date = FR_Date.index(Good_date)
+                                                    date_event = EN_Date[index_date]
                                                 else:
-                                                    print(f'Ligne {EVENT_COUNTER+1} : Soucis de date pour {sport_event} - {url_event}')
-                        #-----------------------Optimiser cette partie du code
+                                                    no_date_event_list.append(f"{specific_event_title} - {url_event}")
+                                                    
                                                 if sportsmen_table :
                                                     first_row_infos = sportsmen_table[0]
                                                     solo_winner = None #Je remets à zéro au cas où
@@ -871,16 +840,6 @@ if result.status_code == 200:
         print(f'-------------------------')
         print()
     
-
-    
-    if no_event_translation_list :
-        print("\033[4m" + "Pas de traduction de l'épreuve ? Ajouter dans feuille 'EVENT'. Pas de ligne dans l'Excel en attendant : " + "\033[0m", end="")
-        print()
-        for no_event_translation in no_event_translation_list:
-            print(f" - {no_event_translation}")
-        print(f'-------------------------')
-        print()
-    
     if just_men_or_women_list :
         print("\033[4m" + "Epreuve traduite en Men ou Women. Ajouter l'event dans feuille 'EVENT' si pas normal : " + "\033[0m", end="")
         for just_men_or_women in just_men_or_women_list:
@@ -888,13 +847,6 @@ if result.status_code == 200:
         print(f'-------------------------')
         print()
         
-    if no_country_translation_list:
-        print("\033[4m" + "Pas de traduction du pays ? Ajouter dans feuille 'COUNTRY' : " + "\033[0m", end="")
-        print()
-        for country_without_translation in no_country_translation_list:
-            print(f" - {country_without_translation}")
-        print(f'-------------------------')
-        print()
         
     if no_abr_translation_list:
         print("\033[4m" + "Pas de traduction de l'abréviation d'un pays ? Ajouter dans feuille 'ABREVIATION' : " + "\033[0m", end="")
@@ -912,14 +864,14 @@ if result.status_code == 200:
         print(f'-------------------------')
         print()
 
-    # if winners_without_nft_list :
-    #     print("\033[4m" + "Voici les prompts pour créer les images sur Midjourney des derniers vainqueurs identifiés " + "\033[0m", end="")
-    #     print()
-    #     for winner_without_nft_list in winners_without_nft_list:
-    #         print()
-    #         print(f"{winner_without_nft_list['Prompt']} {midjourney_parameters}")
-    #     print(f'--------------------------------------------------')
-    #     print()
+    if winners_without_nft_list :
+        print("\033[4m" + "Voici les prompts pour créer les images sur Midjourney des derniers vainqueurs identifiés " + "\033[0m", end="")
+        print()
+        for winner_without_nft_list in winners_without_nft_list:
+            print()
+            print(f"{winner_without_nft_list['Prompt']} {midjourney_parameters}")
+        print(f'--------------------------------------------------')
+        print()
 
 #Création de l'Excel
     actual_day = str(actual_day)

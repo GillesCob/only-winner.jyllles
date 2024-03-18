@@ -1,5 +1,5 @@
 
-def add_to_ALL_sheet (competition_date,country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event,prompt_initial, actual_year,winner_len):
+def add_to_ALL_sheet (competition_date,country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event,prompt_initial, actual_year,name_NFT):
     return {
         'Date_competition' : competition_date,
         'Pays' : country,
@@ -11,11 +11,11 @@ def add_to_ALL_sheet (competition_date,country,city,sport,sport_competition,spor
         'Gagnant' : winner,
         'Gagnant_Pays' : winner_country,
         "Prompt" : prompt_initial,
-        "Nom NFT" : f"{winner_len}-{sport_event}-{date_event}-{actual_year}",
+        "Nom NFT" : name_NFT,
         'Lien' : url_event,
         }
 
-def add_to_today_sheet (EVENT_SPECIFIC_COUNTER,competition_date,country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event,prompt_initial, actual_year,winner_len):
+def add_to_today_sheet (EVENT_SPECIFIC_COUNTER,competition_date,country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event,prompt_initial, actual_year,name_NFT):
     return {
         'Diapositive name' : f"Diapositive{EVENT_SPECIFIC_COUNTER}",
         'Date_competition' : competition_date,
@@ -29,14 +29,14 @@ def add_to_today_sheet (EVENT_SPECIFIC_COUNTER,competition_date,country,city,spo
         'Gagnant_Pays' : winner_country,
         'Lien' : url_event,
         "Prompt" : prompt_initial,
-        "Nom NFT" : f"{winner_len}-{sport_event}-{date_event}-{actual_year}",
+        "Nom NFT" : name_NFT,
         }
 
-def import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,sport_event, prompt_for_import_product, actual_year, actual_month,prompt_initial, month_eng,date_event,winner_len):
+def import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,sport_event, prompt_for_import_product, actual_year, actual_month,prompt_initial, month_eng,date_event,name_NFT):
     return {
     'ID' : f"{EVENT_COUNTER}",
     'Type' : "external",
-    'SKU' : f"Carte-{winner_len}-{sport_event}-{date_event}-{actual_year}",
+    'SKU' : f"Carte-{name_NFT}",
     'Name' : short_winner,
     'Published' : "1",
     'Is featured?' : "0",

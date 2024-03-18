@@ -88,35 +88,8 @@ def winner_event_date_concordance(winner,date_event, url_event): #je créé winn
     winner_and_date_event_list.append(winner_event_date_concordance)
     
 def prompt_import_product(name_NFT): #Je modifie le prompt initial pour qu'il corresponde à la remise en forme opérée par wordpress quand j'importe une image
-    prompt_for_import_product = name_NFT
-    prompt_for_import_product = prompt_for_import_product.replace("(", "")
-    prompt_for_import_product = prompt_for_import_product.replace(")", "")
-    prompt_for_import_product = prompt_for_import_product.replace(" ", "-")
-    prompt_for_import_product = prompt_for_import_product.replace(",", "")
-    prompt_for_import_product = prompt_for_import_product.replace("'", "")
-    prompt_for_import_product = prompt_for_import_product.replace("ö", "o")
-    prompt_for_import_product = prompt_for_import_product.replace("Ö", "O")
-    prompt_for_import_product = prompt_for_import_product.replace("ø", "o")
-    prompt_for_import_product = prompt_for_import_product.replace("ò", "o")
-    prompt_for_import_product = prompt_for_import_product.replace("ó", "o")
-    prompt_for_import_product = prompt_for_import_product.replace("ü", "u")
-    prompt_for_import_product = prompt_for_import_product.replace("ú", "u")
-    prompt_for_import_product = prompt_for_import_product.replace("é", "e")
-    prompt_for_import_product = prompt_for_import_product.replace("É", "E")
-    prompt_for_import_product = prompt_for_import_product.replace("è", "e")
-    prompt_for_import_product = prompt_for_import_product.replace("ã", "a")
-    prompt_for_import_product = prompt_for_import_product.replace("ä", "a")
-    prompt_for_import_product = prompt_for_import_product.replace("á", "a")
-    prompt_for_import_product = prompt_for_import_product.replace("å", "a")
-    prompt_for_import_product = prompt_for_import_product.replace("ý", "y")
-    prompt_for_import_product = prompt_for_import_product.replace("ß", "s")
-    prompt_for_import_product = prompt_for_import_product.replace("í", "i")
-    prompt_for_import_product = prompt_for_import_product.replace("ï", "i")
-    prompt_for_import_product = prompt_for_import_product.replace("---", "-")
-    prompt_for_import_product = prompt_for_import_product.replace("--", "-")
-    
-    prompt_for_import_product = prompt_for_import_product + ".png"
-    return prompt_for_import_product
+    name_NFT = name_NFT + ".png"
+    return name_NFT
 
 def card_name_without_accent(name_NFT):
     name_NFT = name_NFT.replace("(", "")

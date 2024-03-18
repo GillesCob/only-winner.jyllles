@@ -188,7 +188,11 @@ month_fr_list = [] #Traduction du mois afin de faciliter la création des tags p
 month_eng_list = []
 
 #----------------------LISTES POUR LE PRINT FINAL----------------------#
+no_country_list = []
 no_city_list = []
+no_sport_list = []
+no_sport_competition_list = []
+
 no_winner_identified_list  = []
 no_competition_of_sport_translation_list = []
 no_event_translation_list = []
@@ -333,23 +337,22 @@ if result.status_code == 200:
                     event_informations = event.select('td')
                     if event_informations :
                         COMPETITION_COUNTER +=1
+                        
                         #Recherche dans la première partie du tableau initial (dates)
                         competition_date = event_informations[0].text if len(event_informations) > 0 else None
                         
                         #Recherche dans la deuxième partie du tableau initial (Pays/ville)
-                        event_country_and_city = event_informations[1].text if len(event_informations) > 0 else None
                         competition_country = event_informations[1].text if len(event_informations) > 0 else None
-                        city_first_chance = event_informations[1].text if len(event_informations) > 0 else None
+                        competition_city_first_chance = event_informations[1].text if len(event_informations) > 0 else None
                         
                         #Recherche dans la troisième partie du tableau initial (sport/épreuve/compétition/ville)
                         sport = event_informations[2].text if len(event_informations) > 0 else None
                         sport_competition = event_informations[2].text if len(event_informations) > 0 else None
-                        city_second_chance = event_informations[2].text if len(event_informations) > 0 else None
-                        #print(sport_competition)
-                        
-                        # On va chercher un pays précis
-                        if competition_country is not None:
-                            #competition_country = competition_country.lower()
+                        competition_city_second_chance = event_informations[2].text if len(event_informations) > 0 else None
+
+
+#-----------------------On va chercher un pays précis dans la 2ème colonne du tableau principal
+                        if competition_country :
                             Country_match = [Country for Country in FR_Country if Country.lower() in competition_country.lower()]
                             if Country_match:
                                 Good_country = max(Country_match, key=len)
@@ -358,13 +361,16 @@ if result.status_code == 200:
                                     index_pays = FR_Country.index(Good_country)
                                     competition_country = EN_Country[index_pays]
                             else :
-                                competition_country = "-"
+                                no_country_list.append(competition_country)
+                                competition_country = ""
+                                
+                        else :
+                            print("Aucune chance d'arriver ici. Pas de valeur dans la 2ème colonne du tableau principal")
 
-
-                        # On va chercher une ville précise
-                        if city_first_chance is not None and city_second_chance is not None :
-                            City_first_chance_match = [City for City in FR_City if City.lower() in city_first_chance.lower()]
-                            City_second_chance_match = [City for City in FR_City if City.lower() in city_second_chance.lower()]
+#-----------------------On va chercher une ville précise dans la 2ème et 3ème colonne du tableau principal
+                        if competition_city_first_chance and competition_city_second_chance :
+                            City_first_chance_match = [City for City in FR_City if City.lower() in competition_city_first_chance.lower()]
+                            City_second_chance_match = [City for City in FR_City if City.lower() in competition_city_second_chance.lower()]
 
                             if City_first_chance_match :
                                 Good_city = max(City_first_chance_match, key=len)
@@ -377,40 +383,45 @@ if result.status_code == 200:
                                     index_city = FR_City.index(Good_city)
                                     city = EN_City[index_city]
                             else:
+                                no_city_list.append(f"{competition_city_first_chance} ou {competition_city_second_chance}")
                                 city = ""
-                                no_city_list.append(f"{city_first_chance} ou {city_second_chance}")
+                                
                         else:
-                            print("je sais pas ou on est :) ")
+                            print("Aucune chance d'arriver ici. Pas de valeur dans la 2ème ou 3ème colonne du tableau principal")
 
-                        # On va chercher un sport précis
-                        if sport is not None:
-                            #sport = sport.lower()
+
+#-----------------------On va chercher un sport précise dans la 3ème colonne du tableau principal
+                        if sport :
                             sport_matches = [Sport for Sport in FR_Sports if Sport.lower() in sport.lower()]
                             if sport_matches:
                                 Good_sport = max(sport_matches, key=len)
-                                
                                 if Good_sport in FR_Sports:
                                     index_sport = FR_Sports.index(Good_sport)
                                     Good_sport_eng = EN_Sports[index_sport]
                                     sport = Good_sport_eng.strip()
                             else:
-                                sport = f'{sport} A AJOUTER !! - {url_event}'
+                                no_sport_list.append(sport)
+                                sport = ""
                                 
-                        # On va chercher une compétition précise
-                        if sport_competition is not None:
+                        else:
+                            print("Aucune chance d'arriver ici. Pas de valeur dans la 3ème colonne du tableau principal")
+
+
+#-----------------------On va chercher une compétition précise dans la 3ème colonne du tableau principal
+                        if sport_competition :
                             sport_competition = sport_competition.lower()
                             competition_matches = [Competition for Competition in FR_Competition if Competition.lower() in sport_competition.lower()]
                             if competition_matches:
                                 Good_competition = max(competition_matches, key=len)
-                                
                                 if Good_competition in FR_Competition:
                                     index_competition = FR_Competition.index(Good_competition)
                                     Good_competition_eng = EN_Competition[index_competition]
                                     sport_competition = Good_competition_eng
-                                
                             else:
-                                sport_competition = f'{sport_competition} A AJOUTER !! - {url_event}'
-                                
+                                no_sport_competition_list.append(sport_competition)
+                                sport_competition = ""
+                        else:
+                            print("Aucune chance d'arriver ici. Pas de valeur dans la 3ème colonne du tableau principal")       
 
 
 #-----------------------Je vais maintenant dans les pages des compétitions
@@ -819,15 +830,42 @@ if result.status_code == 200:
     print(f'----------------------------------------------------------------------------------------------------')
     print("ERREURS IDENTIFIEES : ")
     print(f'----------------------------------------------------------------------------------------------------')
-    print()
-    
+    print() 
+
+    if no_country_list :
+        print("\033[4m" + 'Manque les pays suivants dans COUNTRY : ' + "\033[0m", end="")
+        print()
+        for no_country in no_country_list:
+            print(f" - {no_country}")
+        print(f'-------------------------')
+        print()   
+
     if no_city_list :
-        print("\033[4m" + 'Compétition sans ville ? Ajouter dans feuille "CITY" : ' + "\033[0m", end="")
+        print("\033[4m" + 'Manque les villes suivantes dans CITY :" : ' + "\033[0m", end="")
         print()
         for no_city in no_city_list:
             print(f" - {no_city}")
         print(f'-------------------------')
         print()
+
+    if no_sport_list :
+        print("\033[4m" + 'Manque les sports suivants dans SPORT :' + "\033[0m", end="")
+        print()
+        for no_sport in no_sport_list:
+            print(f" - {no_sport}")
+        print(f'-------------------------')
+        print()
+        
+    if no_sport_competition_list :
+        print("\033[4m" + 'Manque les compétitions suivantes dans COMPETITION :' + "\033[0m", end="")
+        print()
+        for no_sport_competition in no_sport_competition_list:
+            print(f" - {no_sport_competition}")
+        print(f'-------------------------')
+        print()
+
+
+    
     
     if no_winner_identified_list :
         print("\033[4m" + "Pas de gagnant identifié alors que l'épreuve est déjà passée : " + "\033[0m", end="")

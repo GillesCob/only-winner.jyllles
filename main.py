@@ -86,10 +86,7 @@ def winner_event_date_concordance(winner,date_event, url_event): #je créé winn
     if winner_event_date_concordance in winner_and_date_event_list:
         multiple_winnings_same_day_list.append(f"{winner_event_date_concordance} - {url_event}")
     winner_and_date_event_list.append(winner_event_date_concordance)
-    
-def prompt_import_product(name_NFT): #Je modifie le prompt initial pour qu'il corresponde à la remise en forme opérée par wordpress quand j'importe une image
-    name_NFT = name_NFT + ".png"
-    return name_NFT
+
 
 def card_name_without_accent(name_NFT):
     name_NFT = name_NFT.replace("(", "")
@@ -194,14 +191,16 @@ no_sport_list = []
 no_sport_competition_list = []
 no_competition_of_sport_list = []
 no_event_list = []
+just_men_woman_list = []
+no_event_probably_empty_list = []
 no_date_event_list = []
-
-no_winner_identified_list  = []
-
-no_abr_translation_list = []
-just_men_or_women_list = []
-recents_winners_prompt_list = []
+no_winner_list = []
+no_abr_list = []
 multiple_winnings_same_day_list = []
+
+
+recents_winners_prompt_list = []
+
 
 
 #----------------------VERIFS EXCEL----------------------#
@@ -389,7 +388,7 @@ if result.status_code == 200:
                                     city = EN_City[index_city]
                             else:
                                 no_city_list.append(f"{competition_city_first_chance} ou {competition_city_second_chance}")
-                                city = None
+                                city = "" #Possible qu'on ait juste pas de ville. Je mets une valeur vide mais mets quand même une alerte pour la fin
                         else:
                             print("Aucune chance d'arriver ici. Pas de valeur dans la 2ème ou 3ème colonne du tableau principal")
 
@@ -452,17 +451,28 @@ if result.status_code == 200:
                                     all_competition = BeautifulSoup(event_detail.text, "html.parser")
 
 
-    #----------------------------------------------------------------------------------------BOUCLE1---------------------------------------------------------------------------------
-    #-------------------------------------------------------------------------------Vainqueur = Equipe nationale---------------------------------------------------------------------
-                                    team_competition = None #Remise à zéro
-                                    team_competition = all_competition.select(".h3-vainqueur")
+                                    #Je cherche les gagnants dans la page d'event pour la BOUCLE 1
+                                    team_competition = None
+                                    team_competition = all_competition.select(".h3-vainqueur") #Si j'ai une valeur dans cette classe, c'est que je suis dans une compétition par équipe (1 compétition, 1 gagnant)
+                                    
+                                    #Je cherche les titres des tableaux de résultats Pour la BOUCLE 2
+                                    events_ok_list.clear()
+                                    all_events_in_page = None #Remise à zéro
+                                    all_events_in_page = all_competition.select(".nomargin a") #Si j'ai une valeur dans cette classe ou la suivante, je suis dans une compétition qui a plusieurs events donc plusieurs gagnants
+                                    if all_events_in_page :
+                                        pass
+                                    else:
+                                        all_events_in_page = all_competition.select(".tab_content h2.centre")
+                                    
+#----------------------------------------------------------------------------------------BOUCLE1---------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------Vainqueur = Equipe nationale---------------------------------------------------------------------                                 
                                     if team_competition :
                                         for winning_team in team_competition:
-                                            if winning_team is not None:
+                                            if winning_team :
                                                 EVENT_COUNTER +=1
                                                 sport_event = "" #Pas d'event particulier, l'équipe gagne la compétition en elle-même
                                                 date_event = "" #Avoir la date de la finale ne m'intéresse pas vu que l'équipe gagne une compétition de plusieurs jours
-                                                winner_country = "/" #C'est déjà un pays qui gagne
+                                                winner_country = "" #C'est déjà un pays qui gagne
                                                 city = "" #Les compétitions par équipe se passent souvent dans plusieurs villes
                                                 
                                                 winning_team_info = winning_team.find(class_='nodecort')
@@ -480,63 +490,54 @@ if result.status_code == 200:
                                                         if competition_country :
                                                             prompt_initial = f'{winner} wins the {competition_of_sport_traduction_value} in {competition_country}'
                                                         else :
-                                                            prompt_initial = f'{winner} wins the {competition_of_sport_traduction_value}'
+                                                            prompt_initial = f'{winner} wins the {competition_of_sport_traduction_value}' #Le tournoi des VI Nations par ex se passe dans plusieurs pays
                                                         
                                                         winner_len = str(len(winner))
-                                                        name_NFT = f"{winner_len}-{sport}-{sport_competition}-{actual_year}"
-                                                        name_NFT = card_name_without_accent(name_NFT)
+                                                        name_NFT = card_name_without_accent(f"{winner_len}-{sport}-{sport_competition}-{actual_year}")
 
-                                                        #Ci-dessous les éléments spécifiques à intégrer à la feuille contenant tous les évènements du mois
+                                                        #J'intègre d'abord TOUS les évènements du mois dans ma feuille excel ALL
                                                         all_winners_one_sheet = dictionary.add_to_ALL_sheet(competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event,prompt_initial,actual_year,name_NFT)
+                                                        
+                                                        #J'ai toutes les valeurs pour l'Excel, j'envoi les données du dictionnaire vers la page contenant TOUTES les compétitions du mois
                                                         all_month_winners_list.append(all_winners_one_sheet)
                                                         
                                                         if name_NFT not in winners_with_nft_list : #La carte n'est pas encore créée. j'envoi ces données dans la liste du jour
                                                             #Ci-dessous les éléments spécifiques à intégrer à la feuille contenant les évènements n'ayant pas encore de carte
                                                             EVENT_SPECIFIC_COUNTER +=1
                                                             new_winners_one_sheet = dictionary.add_to_today_sheet(EVENT_SPECIFIC_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event, prompt_initial,actual_year,name_NFT)
+                                                            rename_prompt_for_midjourney(prompt_initial) #Le prompt devient le nom sous lequel j'enregistre rapidement chaque image Midjourney. J'ajoute la clé {Prompt_Midjourney} à new_winners_one_sheet
                                                             
-                                                            rename_prompt_for_midjourney(prompt_initial)
-                                                            
+                                                            #J'ai toutes les valeurs pour l'Excel, j'envoi les données du dictionnaire vers la page du jour qui contient tous les events sans cartes
                                                             winners_without_nft_list.append(new_winners_one_sheet)
                                                             
                                                             #Ci-dessous les éléments spécifiques à intégrer à la feuille qui permet l'import des produits dans WP
-                                                            prompt_for_import_product = prompt_import_product(prompt_initial)
-                                                            short_winner = create_short_winner(winner)
+                                                            prompt_for_import_product = name_NFT + ".png"
+                                                            short_winner = create_short_winner(winner) #Sert pour réduire la taille du titre de la carte sur le site
                                                             data_for_wordpress = dictionary.import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,sport_event, prompt_for_import_product, actual_year, scrapping_month,prompt_initial, month_eng, date_event,name_NFT)
-                                                            data_for_wordpress_list.append(data_for_wordpress)
+                                                            
                                                             #J'ai toutes les valeurs pour l'Excel, j'envoi les données du dictionnaire vers la liste qui servira à compléter l'Excel à la date du scrapping
                                                             data_for_wordpress_list.append(data_for_wordpress)
                                                         
-                                                    else: #Pas de traduction pour competition of sport donc les infos ne sont pas intégrées à l'excel
+                                                    else: #Pas de traduction pour "competition of sport" donc les infos ne sont pas intégrées à l'excel
                                                         no_competition_of_sport_list.append(f'{sport_competition} of {sport} - {url_event}') #J'ajoute un message final pour rajouter comp of sport dans ma liste Excel
                                                         
                                                 else: #Pas de traduction pour le pays gagnant donc les infos ne sont pas intégrées à l'excel
                                                     no_country_list.append(f"{winning_team_name} - {url_event}")
 
                                             else:
-                                                print(f"{winning_team} est None - {url_event }")
+                                                no_winner_list.append(f"BALISE_no_winner 4 : {url_event}")
                                     
                                     
                                     
-        #----------------------------------------------------------------------------------------BOUCLE2---------------------------------------------------------------------------------
-        #-------------------------------------------------------------------------------Vainqueur = Individu(s)--------------------------------------------------------------------------                                    
-                                    else : #Je n'ai pas de valeur dans h3.vainqueur donc j'arrive ici
-                                        events_ok_list.clear()
-                                        all_events_in_page = None #Remise à zéro
-                                        
-                                        all_events_in_page = all_competition.select(".nomargin a")
-                                        if all_events_in_page :
-                                            pass
-                                        else:
-                                            all_events_in_page = all_competition.select(".tab_content h2.centre")
-                                            
-
+#----------------------------------------------------------------------------------------BOUCLE2---------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------Vainqueur = Individu(s)--------------------------------------------------------------------------                                    
+                                    elif all_events_in_page :
                         #---------------1er tris : je retire tous les events présents dans ma liste "Ignore_Competitions"
                                         for event_in_page in all_events_in_page :
                                             if event_in_page :
                                                 event_in_page_text = event_in_page.text
                                                 if [Ignore_Competition for Ignore_Competition in FR_Ignore_event if Ignore_Competition.lower() in event_in_page_text.lower()]:
-                                                    pass
+                                                    pass #L'event est ignoré, je ne fais rien de plus avec lui car dans la suite je ne vais itérer que dans la liste [events_ok_list]
                                                 else:
                                                     events_ok_list.append(event_in_page_text) #Les events non ignorés sont ajoutés à cette liste events_ok_list
                                                     
@@ -546,7 +547,7 @@ if result.status_code == 200:
                                                         if p_14_element and re.search(r"Cette manche a été annulée", p_14_element.text, re.IGNORECASE):
                                                             event_canceled = p_14_element.find_previous_sibling(class_="nomargin") #l'event annulé est situé dans la class nomargin située juste avant
                                                             event_canceled = event_canceled.text
-                                                            if event_canceled == event_in_page_text : #si l'event avant p_14 est l'event dans lequel on est, je l'enlève de la liste
+                                                            if event_canceled == event_in_page_text : #si l'event avant p_14 est l'event dans lequel on est, je l'enlève de la liste [events_ok_list]
                                                                 events_ok_list.remove(event_canceled)
                                                             else:
                                                                 pass 
@@ -554,34 +555,34 @@ if result.status_code == 200:
                                                             pass #Pas de manche annulée, possible que ce p_14 serve à autre chose
                                                         
                         #---------------3ème tris : je retire les events présents dans un toggle (résultats détaillés donc donnée en double)
-                                                    if event_in_page.find_parent("ul", class_="toggle"): #si un event a une class toggle en parent c'est qu'il doit être remove
+                                                    if event_in_page.find_parent("ul", class_="toggle"): #si un event a une class toggle en parent c'est qu'il doit être remove de [events_ok_list]
                                                         events_ok_list.remove(event_in_page_text)
                                                     else:
-                                                        pass #Pas d'event dans un toggle "Résultat détaillé"
+                                                        pass #L'event n'est pas dans un toggle "Résultat détaillé". Je le laisse dans ma liste [events_ok_list]
                                             else:
-                                                print(f'Aucun event dans la page : {url_event}')
+                                                no_event_list.append(f"BALISE_no_event 4 : {url_event}")
                                                 
         
                                         #J'ai identifié les events à prendre en compte
-                                        for event_in_page_index, event_in_page in enumerate(all_events_in_page,start=1): #Je dois reprendre les données sur toute la page et non pas repartir de la liste des events
-                                            if event_in_page.text in events_ok_list : #Je vérifie par contre tout de suite pour ne continuer qu'avec les events passés par les tamis
-                                                sportsmen_table = event_in_page.find_all_next('table', class_='table-style-2', limit=1)
+                                        for event_in_page_index, event_in_page in enumerate(all_events_in_page,start=1): #Je refais un for sur tous les events de la page
+                                            if event_in_page.text in events_ok_list : #Je vérifie par contre tout de suite s'il fait partie de la liste [events_ok_list] pour ne continuer qu'avec les events passés par les tamis précédents
+                                                sportsmen_table = event_in_page.find_all_next('table', class_='table-style-2', limit=1) #Je chope tous les tableaux contenant les athlètes
                                                 specific_event_title = event_in_page.text
                                                 
-                                                
-                                                #Je prends le titre d'event et je cherche un event présent dans ma BDD INITIALE
+                                                #Je vérifie si dans specific_event_title je retrouve un nom d'event présent dans ma BDD INITIALE
                                                 event_matches = [Event for Event in FR_Event if Event.lower() in specific_event_title.lower()]
-                                                if event_matches: #Si l'épreuve fait partie de la liste des events en français
+                                                if event_matches: #Si l'épreuve fait partie de la liste des events dans BDD INITIALE
                                                     Good_event = max(event_matches, key=len) #Je prends la plus longue correspondance s'il y en a plusieurs
                                                     index_event = FR_Event.index(Good_event)
-                                                    sport_event = EN_Event[index_event] #ATTENTION il faut 1 valeur dans chaque case sinon tout se décale
+                                                    sport_event = EN_Event[index_event] #sport_event a maintenant sa version traduite en anglais
                                                     
-                                                    if len(Good_event) == 2: #J'ai créé 1 event ho et 1 event fe (donc si ==2 c'est qu'on a que homme ou femme comme info pour l'event ou bien que l'event n'est pas traduit)
-                                                        no_event_list.append(f'{specific_event_title} - {url_event}"')
+                                                    if len(Good_event) == 2: #J'ai créé 1 event "ho" et 1 event "fe" (donc si ==2 c'est qu'on a que homme ou femme comme info pour l'event ou bien que l'event n'est pas traduit)
+                                                        just_men_woman_list.append(f"BALISE_no_event 3 : {specific_event_title} - {url_event}") #Je permets de voir rapidement dans le print final si je n'ai que Homme/Femme comme info pour l'event
                                                 
-                                                else: #L'épreuve ne fait pas partie de la liste acceptée car traduction non fournie encore
-                                                    events_ok_list.remove(specific_event_title) #Retirée de la liste des events ok, devra être traduit si on veut son ajout dans l'Excel
-                                                    no_event_list.append(f"{specific_event_title} - {url_event}")
+                                                else: #L'épreuve ne fait pas partie de ma BDD INITIALE.
+                                                    events_ok_list.remove(specific_event_title) #Je retire cet event de la liste des events ok, il devra être traduit si on veut son ajout dans l'Excel
+                                                    no_event_list.append(f"BALISE_no_event 2 : {specific_event_title} - {url_event}")
+                                                    sport_event = "" #Je mets une valeur vide afin de ne pas avoir de confusion dans l'Excel
                                                     
                         
                                                 #Je prends le titre d'event et je cherche une date présente dans ma BDD INITIALE
@@ -589,36 +590,35 @@ if result.status_code == 200:
                                                 if date_matches:
                                                     Good_date = max(date_matches, key=len)
                                                     index_date = FR_Date.index(Good_date)
-                                                    date_event = EN_Date[index_date]
+                                                    date_event = EN_Date[index_date] #Date a maintenant sa version traduite en anglais
                                                 else:
-                                                    no_date_event_list.append(f"{specific_event_title} - {url_event}")
+                                                    no_date_event_list.append(f"BALISE_no_date 3 : {specific_event_title} - {url_event}")
                                                     
                                                 if sportsmen_table :
-                                                    first_row_infos = sportsmen_table[0]
                                                     solo_winner = None #Je remets à zéro au cas où
                                                     team_winner = None #Je remets à zéro au cas où
-                                                    solo_winner_2 = None #Je remets à zéro au cas où
+                                                    
+                                                    first_row_infos = sportsmen_table[0]
                                                     solo_winner = first_row_infos.find('a', class_='nodecort') #Si j'ai un gagnant seul, class = nodecort
                                                     team_winner = first_row_infos.find(class_='tdcol-70') #Si j'ai plusieurs gagnants, class = tdcol-70
                                                     
                                                     if solo_winner :  
                                                         winner_style = "solo"
-                                                        winner = solo_winner.text
-                                                        winner = winner.strip() #Je retire tous les espaces avant/après
+                                                        winner = (solo_winner.text).strip() #Je retire tous les espaces avant/après
                                                     elif team_winner :
                                                         winner_style = "team"
-                                                        winner = team_winner.text
-                                                        winner = winner.strip() #Je retire tous les espaces avant/après
+                                                        winner = (team_winner.text).strip() #Je retire tous les espaces avant/après
                                                     else:
                                                         date_number = re.search(r'\d+', date_event)
                                                         date_number_int = int(date_number.group())
                                                         if date_number_int > verif_date_event :
-                                                                #La date de l'event est supérieur à la date de vérif. Je ne print rien. Normal de ne pas avoir de gagnant
-                                                                winner = None
-                                                        else:
+                                                            #La date de l'event est supérieur à la date de vérif. Je ne print rien. Il y a un tableay sans gagnant mais normal de ne pas avoir de gagnant donc...
                                                             winner = None
-                                                            #La date de l'event est antérieur à la date du scrapping. Vérifier l'url pour voir pourquoi on a pas de gagnant
-                                                            no_winner_identified_list.append(f"Pas de gagnant : {url_event}")
+                                                        elif date_number_int < verif_date_event :
+                                                            winner = None
+                                                            no_winner_list.append(f"BALISE_no_winner 3 : {url_event}") #La date de l'event est antérieur à la date du scrapping. Je vérifie l'url pour voir pourquoi on a pas de gagnant
+                                                        else:
+                                                            no_date_event_list.append(f"BALISE_no_date 2 : {url_event}") #J'ai peut-être un soucis avec le if et elif. Pas de winner et soucis de date ? A checker
 
                                                     #résultat sous la forme "nom (pays)" si "solo" ou "pays (nom1, nom2)" si "team"
                                                     if winner is not None :
@@ -637,121 +637,101 @@ if result.status_code == 200:
                                                             #url source : https://www.trucsweb.com/tutoriels/internet/iso_3166/
                                                             if winner_country in ISO3_Abreviation: #Si l'abréviation répond déjà à ISO 3
                                                                 winner_country_info = True
-                                                                pass
                                                             elif winner_country in FR_Abreviation: #Si l'abréviation est présente en Français, on choisit sa traduction en ISO 3
                                                                 index_FR_Abr = FR_Abreviation.index(winner_country)
-                                                                Abr_eng = EN_Abreviation[index_FR_Abr]
-                                                                winner_country = Abr_eng
+                                                                winner_country = EN_Abreviation[index_FR_Abr]
                                                                 winner_country_info = True
                                                             else:
-                                                                no_abr_translation_list.append(winner_country)
-                                                                winner_country = "RELANCER LE SCRIPT ET AJOUTER LE PAYS AUX DATAS"
+                                                                no_abr_list.append(f"BALISE_no_abr 1 : {winner_country}")
+                                                                winner_country = "?"
                                                                 winner_country_info = False
                                                         else:
-                                                            winner = winners_info[0] #Je prends la valeur telle qu'elle et je suis averti par le print()
+                                                            winner = winners_info[0]
                                                             winner_country = "?"
                                                             winner_country_info = False
-                                                            #print(f"Diapositive_{EVENT_COUNTER+1} - Je n'ai pas la nationalité dans le site. Trouver un moyen à terme (en attendant prompt sans nationalité : {url_event}")
+                                                            #Trouver un moyen à terme de récupérer la nationalité de l'athlète (en attendant prompt sans nationalité)
                                                         
-                                                        EVENT_COUNTER +=1
+                                                        #J'ai le gagnant et la date de sa victoire. Je vérifie si je n'ai pas des athlètes ayant gagné plusieurs fois le même jour (soucis sur le site potentiel)
+                                                        winner_event_date_concordance(winner,date_event,url_event)
+                                                        
+                                                        EVENT_COUNTER +=1 #J'ai passé toutes les embûches, à partir d'ici je vais organiser les données pour les inclure dans les feuilles Excel
                                                         sport_competition = sport_competition.strip()
                                                         sport = sport.strip()
                                                         competition_of_sport = f"{sport_competition} of {sport}"
                                                         
-                                                        if winner_country_info :
-                                                            if city == "": #Le prompt varie en fonction de si j'ai identifié une ville ou non
-                                                                if competition_of_sport in competition_of_sport_list:
-                                                                    j = competition_of_sport_list.index(competition_of_sport)
-                                                                    competition_of_sport_traduction_value = competition_of_sport_traduction[j]
+                                                        
+                                                        #Je vais dans le if/else suivant ressortir le prompt_initial
+                                                        if competition_of_sport in competition_of_sport_list:
+                                                            j = competition_of_sport_list.index(competition_of_sport)
+                                                            competition_of_sport_traduction_value = competition_of_sport_traduction[j]
+                                                            if winner_country_info :
+                                                                if city == "": #J'ai l'info de la nationalité du gagnant mais pas de ville d'épreuve
                                                                     prompt_initial = f'{winner} ({winner_country}) wins the {sport_event} {competition_of_sport_traduction_value} in {competition_country} on {date_event}'
-                                                                    winner_event_date_concordance(winner,date_event, url_event)
-                                                                else:
-                                                                    prompt_initial = 'Pas de prompt' #Je dois avoir une formulation de prompt nickel
-                                                                    winner_event_date_concordance(winner,date_event, url_event)
-                                                                    
-                                                                    #ALERTE
-                                                                    no_competition_of_sport_list.append(f'{sport_competition} of {sport} - {url_event}')
-                                                                
-                                                            else:
-                                                                if competition_of_sport in competition_of_sport_list:
-                                                                    j = competition_of_sport_list.index(competition_of_sport)
-                                                                    competition_of_sport_traduction_value = competition_of_sport_traduction[j]
+                                                                else: #J'ai l'info de la nationalité du gagnant mais et la ville d'épreuve
                                                                     prompt_initial = f'{winner} ({winner_country}) wins the {sport_event} {competition_of_sport_traduction_value} in {city}, {competition_country} on {date_event}'
-                                                                    winner_event_date_concordance(winner,date_event, url_event)
-                                                                else:
-                                                                    prompt_initial = 'Pas de prompt' #Je dois avoir une formulation de prompt nickel
-                                                                    winner_event_date_concordance(winner,date_event, url_event)
-                                                                    
-                                                                    #ALERTE
-                                                                    no_competition_of_sport_list.append(f'{sport_competition} of {sport} - {url_event}')
-                                                                
-                                                        else :
-                                                            if city == "": #Le prompt varie en fonction de si j'ai identifié une ville ou non
-                                                                if competition_of_sport in competition_of_sport_list:
-                                                                    j = competition_of_sport_list.index(competition_of_sport)
-                                                                    competition_of_sport_traduction_value = competition_of_sport_traduction[j]
+                                                            else :
+                                                                if city == "": #Je n'ai pas l'info de la nationalité du gagnant ni la ville d'épreuve
                                                                     prompt_initial = f'{winner} wins the {sport_event} {competition_of_sport_traduction_value} in {competition_country} on {date_event}'
-                                                                    winner_event_date_concordance(winner,date_event, url_event)
-                                                                else:
-                                                                    prompt_initial = 'Pas de prompt' #Je dois avoir une formulation de prompt nickel
-                                                                    winner_event_date_concordance(winner,date_event, url_event)
-                                                                    
-                                                                    #ALERTE
-                                                                    no_competition_of_sport_list.append(f'{sport_competition} of {sport} - {url_event}')
-                                                                
-                                                            else:
-                                                                if competition_of_sport in competition_of_sport_list:
-                                                                    j = competition_of_sport_list.index(competition_of_sport)
-                                                                    competition_of_sport_traduction_value = competition_of_sport_traduction[j]
+                                                                else: #Je n'ai pas l'info de la nationalité du gagnant mais j'ai la ville d'épreuve
                                                                     prompt_initial = f'{winner} wins the {sport_event} {competition_of_sport_traduction_value} in {city}, {competition_country} on {date_event}'
-                                                                    winner_event_date_concordance(winner,date_event, url_event)
-                                                                else:
-                                                                    prompt_initial = 'Pas de prompt' #Je dois avoir une formulation de prompt nickel
-                                                                    winner_event_date_concordance(winner,date_event, url_event)
-                                                                    
-                                                                    #ALERTE
-                                                                    no_competition_of_sport_list.append(f'{sport_competition} of {sport} - {url_event}')
+                                                        else:
+                                                            prompt_initial = 'Pas de prompt' #Je dois avoir une formulation de prompt nickel
+                                                            no_competition_of_sport_list.append(f'{sport_competition} of {sport} - {url_event}')
+                                                            
+                                                        prompt_initial = prompt_initial.replace("  ", " ") #J'ai des cas où je n'ai pas d'event (tennis par ex ou je n'arrive pas à distinguer si ATP ou WTA). Je transforme le double espace en simple
 
+                                                        #J'ai le prompt_initial et toutes les infos, je créé le nom de la carte et j'ajoute les données à l'Excel
                                                         winner_len = len(winner)
                                                         name_NFT = f"{winner_len}-{sport}-{sport_competition}-{sport_event}-{date_event}-{actual_year}"
                                                         name_NFT = card_name_without_accent(name_NFT)
                                                         
+                                                        #J'intègre d'abord TOUS les évènements du mois dans ma feuille excel ALL
                                                         all_winners_one_sheet = dictionary.add_to_ALL_sheet(competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event, prompt_initial,actual_year,name_NFT)
+                                                        #J'ai toutes les valeurs pour l'Excel, j'envoi les données du dictionnaire vers la page contenant TOUTES les compétitions du mois
                                                         all_month_winners_list.append(all_winners_one_sheet) #j'ajoute le dictionnaire à ma liste contenant tous les gagnants et leurs infos annexes
                                                         
 
                                                         if name_NFT not in winners_with_nft_list : #La carte n'est pas encore créée. j'envoi ces données dans la liste du jour
+                                                            #Ci-dessous les éléments spécifiques à intégrer à la feuille contenant les évènements n'ayant pas encore de carte
                                                             EVENT_SPECIFIC_COUNTER +=1
-                                                            date_number = re.search(r'\d+', date_event)
-                                                            date_number_int = int(date_number.group())
-                                                            if date_number_int <= actual_day :
-                                                                new_winners_one_sheet = dictionary.add_to_today_sheet(EVENT_SPECIFIC_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event, prompt_initial, actual_year,name_NFT)
-                                                                rename_prompt_for_midjourney(prompt_initial)
-                                                                winners_without_nft_list.append(new_winners_one_sheet)
-                                                                
-                                                                #Je balance les éléments suivants dans le dictionnaire et sa fonction "import_wordpress"
-                                                                prompt_for_import_product = prompt_import_product(name_NFT)
-                                                                short_winner = create_short_winner(winner)
-                                                                data_for_wordpress = dictionary.import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,sport_event, prompt_for_import_product, actual_year, scrapping_month,prompt_initial, month_eng, date_event,name_NFT)
-                                                                data_for_wordpress_list.append(data_for_wordpress)
+                                                            new_winners_one_sheet = dictionary.add_to_today_sheet(EVENT_SPECIFIC_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event, prompt_initial, actual_year,name_NFT)
+                                                            rename_prompt_for_midjourney(prompt_initial)
+                                                            
+                                                            #J'ai toutes les valeurs pour l'Excel, j'envoi les données du dictionnaire vers la page du jour qui contient tous les events sans cartes
+                                                            winners_without_nft_list.append(new_winners_one_sheet)
+                                                            
+                                                            #Ci-dessous les éléments spécifiques à intégrer à la feuille qui permet l'import des produits dans WP
+                                                            prompt_for_import_product = name_NFT + ".png"
+                                                            short_winner = create_short_winner(winner) #Sert pour réduire la taille du titre de la carte sur le site
+                                                            data_for_wordpress = dictionary.import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,sport_event, prompt_for_import_product, actual_year, scrapping_month,prompt_initial, month_eng, date_event,name_NFT)
+                                                            
+                                                            #J'ai toutes les valeurs pour l'Excel, j'envoi les données du dictionnaire vers la liste qui servira à compléter l'Excel à la date du scrapping
+                                                            data_for_wordpress_list.append(data_for_wordpress)
                                                         
-                
                                                     else:
-                                                        print(f"Je n'ai pas de gagnant identifiable :{sport_competition} - {sport_event} - {url_event}")
+                                                        no_winner_list.append(f"BALISE_no_winner 2 : {url_event}")
                                                     
                                                 else:
                                                     date_number = re.search(r'\d+', date_event)
                                                     date_number_int = int(date_number.group())
                                                     if date_number_int > actual_day :
-                                                            #L'event n'a pas encore eu lieu. Pas de soucis et je ne print rien pour ne pas me polluer'
+                                                            #L'event n'a pas encore eu lieu. Pas de soucis et je ne vais pas plus loin dans la recherche, je pass pour cet event
                                                             winner = None
-                                                    else:
+                                                    elif date_number_int < actual_day :
                                                         winner = None
-                                                        #La date de l'event est antérieur à la date du scrapping. Potentiel soucis
-                                                        no_winner_identified_list.append(f"{url_event}")
+                                                        #La date de l'event est antérieur à la date du scrapping. Potentiel soucis. J'ajoute l'info dans le print final et m'arrête là dans les recherches
+                                                        no_winner_list.append(f"BALISE_no_winner 1 : {url_event}")
+                                                    else :
+                                                        no_date_event_list.append(f"BALISE_no_date 1 : {url_event}") #J'ai peut-être un soucis avec le if et elif. Pas de winner et soucis de date ? A checker
+                                                        
+                                            else :
+                                                pass #L'event ne fait pas partie de [events_ok_list], j'arrive ici et je pass
 
                                         pause = random.randrange(1, 3)
                                         time.sleep(pause)   
+
+                                    else:
+                                        no_event_probably_empty_list.append(f"BALISE_no_event 1 : {url_event}") #J'ai une page d'event mais pas de gagnant ni présent dans h3, no margin ou center
                                 else:
                                     print(f"Pas de retour de l'url. Status code = {result.status_code}")
 
@@ -807,18 +787,37 @@ if result.status_code == 200:
         print()
         
     if no_competition_of_sport_list :
-        print("\033[4m" +'Manque les "compétitions of sport" suivantes dans COMP OD SPORT :' + "\033[0m", end="")
+        print("\033[4m" +'Manque les "compétitions of sport" suivantes dans COMP OF SPORT :' + "\033[0m", end="")
         print()
         for no_competition_of_sport in no_competition_of_sport_list:
             print(f" - {no_competition_of_sport}")
+        print("\033[4m" +"Ces résultats ne sont pas présents dans l'Excel" + "\033[0m", end="")
+        print()
         print(f'-------------------------')
         print()
 
     if no_event_list :
-        print("\033[4m" +'Manque les events suivants dans EVENT (ou bien juste Homme/Femme) :' + "\033[0m", end="")
+        print("\033[4m" +'Manque les events suivants dans EVENT :' + "\033[0m", end="")
         print()
         for no_event in no_event_list:
             print(f" - {no_event}")
+        print("\033[4m" +"Ces résultats SONT dans l'Excel donc le prompt n'a pas l'event. A prendre en considération" + "\033[0m", end="")
+        print(f'-------------------------')
+        print()
+        
+    if just_men_woman_list :
+        print("\033[4m" +"Probablement que HOMME/FEMME dans l'event, vérifier tout de même s'il ne manque pas une traduction dans EVENT :" + "\033[0m", end="")
+        print()
+        for just_men_woman in just_men_woman_list:
+            print(f" - {just_men_woman}")
+        print(f'-------------------------')
+        print()
+        
+    if no_event_probably_empty_list :
+        print("\033[4m" +'Pages très probablement vides :' + "\033[0m", end="")
+        print()
+        for no_event_probably_empty in no_event_probably_empty_list:
+            print(f" - {no_event_probably_empty}")
         print(f'-------------------------')
         print()
 
@@ -829,33 +828,23 @@ if result.status_code == 200:
             print(f" - {no_date_event}")
         print(f'-------------------------')
         print()
- 
-   
-    
-    if no_winner_identified_list :
-        print("\033[4m" + "Pas de gagnant identifié alors que l'épreuve est déjà passée : " + "\033[0m", end="")
+        
+    if no_winner_list :
+        print("\033[4m" +"Manque un gagnant dans les events suivants :" + "\033[0m", end="")
         print()
-        for no_winner_identified in no_winner_identified_list:
-            print(f" - {no_winner_identified}")
-        print(f'-------------------------')
-        print()
-    
-    if just_men_or_women_list :
-        print("\033[4m" + "Epreuve traduite en Men ou Women. Ajouter l'event dans feuille 'EVENT' si pas normal : " + "\033[0m", end="")
-        for just_men_or_women in just_men_or_women_list:
-            print(f" - {just_men_or_women}")
+        for no_winner in no_winner_list:
+            print(f" - {no_winner}")
         print(f'-------------------------')
         print()
         
-        
-    if no_abr_translation_list:
-        print("\033[4m" + "Pas de traduction de l'abréviation d'un pays ? Ajouter dans feuille 'ABREVIATION' : " + "\033[0m", end="")
+    if no_abr_list:
+        print("\033[4m" + "Manque les abréviations suivantes dans ABREVIATION : " + "\033[0m", end="")
         print()
-        for abr_translation in no_abr_translation_list:
+        for abr_translation in no_abr_list:
             print(f" - {abr_translation}")
         print(f'-------------------------')
         print()       
-        
+     
     if multiple_winnings_same_day_list :
         print("\033[4m" + "Ces athlètes ont remporté plusieurs épreuves le même jour : " + "\033[0m", end="")
         print()

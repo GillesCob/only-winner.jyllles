@@ -7,7 +7,7 @@ from datetime import datetime
 #Si j'ai un commentaire dans la colonne "Commentaire" alors je ne traite pas l'image
 #Attention à bien mettre à jour le mois concerné !
 
-actual_month = "Mars"
+actual_month = "Février"
 actual_day = int(datetime.now().day)
 excel_sheet = str(actual_day)
 

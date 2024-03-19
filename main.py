@@ -77,6 +77,9 @@ def rename_prompt_for_midjourney(name_NFT): #Modification du prompt pour corresp
     prompt_midjourney = prompt_midjourney.replace("í", "i")
     prompt_midjourney = prompt_midjourney.replace("ï", "i")
     prompt_midjourney = prompt_midjourney.replace("á", "a")
+    prompt_midjourney = prompt_midjourney.replace("å", "a")
+    prompt_midjourney = prompt_midjourney.replace("ä", "a")
+    prompt_midjourney = prompt_midjourney.replace("ß", "")
     prompt_midjourney = "jyllles_" + prompt_midjourney
     new_winners_one_sheet['Prompt_Midjourney'] = prompt_midjourney
     
@@ -130,13 +133,6 @@ def create_short_winner(winner): #Diminuer le nombre de caractères afin d'avoir
         short_winner = winner
     return short_winner
 
-# def recent_winner_prompt(date_event, date_dernier_scrapping, prompt_initial, midjourney_parameters, EVENT_COUNTER): #Identification gagnant depuis le dernier scrapping
-#     if date_event:
-#         date_number = re.search(r'\d+', date_event)
-#         date_number_int = int(date_number.group())
-#         if date_number_int >= date_dernier_scrapping :
-#             recents_winners_prompt_list.append(f"{EVENT_COUNTER} - {prompt_initial} {midjourney_parameters}")
-
 #----------------------VARIABLES INITIALES----------------------#
 
 actual_year = str(datetime.now().year)
@@ -182,7 +178,7 @@ competition_of_sport_list = [] #De manière bête et méchante je vais ajouter d
 competition_of_sport_traduction = [] #J'ai ici la traduction de la liste précédente pour que la traduction soit la plus exacte possible
 
 month_fr_list = [] #Traduction du mois afin de faciliter la création des tags produit pour WP
-month_eng_list = []
+month_en_list = []
 
 #----------------------LISTES POUR LE PRINT FINAL----------------------#
 no_country_list = []
@@ -197,9 +193,6 @@ no_date_event_list = []
 no_winner_list = []
 no_abr_list = []
 multiple_winnings_same_day_list = []
-
-
-recents_winners_prompt_list = []
 
 
 
@@ -225,10 +218,10 @@ for nom_nft in os.listdir(dossier_NFT):
     winners_with_nft_list.append(nom_nft)
         
 #Je charge l'Excel
-classeur = openpyxl.load_workbook(nom_excel_month)
+classeur_month = openpyxl.load_workbook(nom_excel_month)
 classeur_bdd_datas = openpyxl.load_workbook(nom_exel_bdd_datas)
 
-#Ajouts du nom des feuilles Excel suite au changement d'organisation de l'Excel
+#Ajouts du nom des feuilles Excel présentes dans BDD INITIALE
 sport_sheet = classeur_bdd_datas["SPORT"]
 competition_sheet = classeur_bdd_datas["COMPETITION"]
 event_sheet = classeur_bdd_datas["EVENT"]
@@ -241,8 +234,11 @@ comp_of_sport_sheet = classeur_bdd_datas["COMP OF SPORT"]
 month_sheet = classeur_bdd_datas["MONTH"]
 twitter_sheet = classeur_bdd_datas["TWITTER"]
     
+#Ajouts du nom de la feuille Excel présentes dans l'Excel du mois
+ignore_month_elements_sheet = classeur_month["IGNORE_MONTH_ELEMENTS"]
 
 
+#CONCERNANT LES ELEMENTS PRESENTS DANS "BDD INITIALE"------------------------------------------------------------------------------
 #----------------------SPORTS EN ENTREE----------------------#
 # Je créé deux listes plus spécifiques contenant les éléments de la colonne A (en FR) et B (en ANG)
 FR_Sports = [cell.value for cell in sport_sheet['A'] if cell.value is not None]
@@ -307,12 +303,25 @@ for cell in month_sheet['A'][1:]:
 for cell in month_sheet['B'][1:]:
     # Vérifier si la cellule n'est pas vide et ajouter sa valeur à la liste
     if cell.value is not None:
-        month_eng_list.append(cell.value)
-        
+        month_en_list.append(cell.value)
+
+
+#CONCERNANT LES ELEMENTS PRESENTS DANS l'Excel du mois. IME car "IGNORE_MONTH_ELEMENTS"------------------------------------------------------------------------------
+IME_country_list = [cell.value for cell in ignore_month_elements_sheet['A'] if cell.value is not None]
+IME_city_list = [cell.value for cell in ignore_month_elements_sheet['B'] if cell.value is not None]
+IME_competition_list = [cell.value for cell in ignore_month_elements_sheet['C'] if cell.value is not None]
+IME_comp_of_sport_list = [cell.value for cell in ignore_month_elements_sheet['D'] if cell.value is not None]
+IME_events_list = [cell.value for cell in ignore_month_elements_sheet['E'] if cell.value is not None]
+IME_just_men_woman_list = [cell.value for cell in ignore_month_elements_sheet['F'] if cell.value is not None]
+IME_no_event_probably_empty_list = [cell.value for cell in ignore_month_elements_sheet['G'] if cell.value is not None]
+IME_no_date_event_list = [cell.value for cell in ignore_month_elements_sheet['H'] if cell.value is not None]
+IME_multiple_winnings_same_day_list = [cell.value for cell in ignore_month_elements_sheet['I'] if cell.value is not None]
+
+
 
 if scrapping_month in month_fr_list:
     k = month_fr_list.index(scrapping_month)
-    month_eng = month_eng_list[k]
+    month_eng = month_en_list[k]
 else:
     print('SOUCIS DE TRADUCTION MOIS')
 
@@ -513,7 +522,18 @@ if result.status_code == 200:
                                                             #Ci-dessous les éléments spécifiques à intégrer à la feuille qui permet l'import des produits dans WP
                                                             prompt_for_import_product = name_NFT + ".png"
                                                             short_winner = create_short_winner(winner) #Sert pour réduire la taille du titre de la carte sur le site
-                                                            data_for_wordpress = dictionary.import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,sport_event, prompt_for_import_product, actual_year, scrapping_month,prompt_initial, month_eng, date_event,name_NFT)
+                                                            
+                                                            #Je dois récupérer le mois de l'event et le mettre dans le tag (et non pas mettre le mois du scrapping). Certaines compétitions commencent en fev et finissent en mars par ex
+                                                            #Pour les events par équipe, je prends la date de la compétition et je chope le mois dans la fin de variable
+                                                            competition_date = competition_date.split("-")
+                                                            competition_end_date = competition_date[1]
+                                                            for month in month_fr_list :
+                                                                if month in competition_end_date :
+                                                                    k = month_fr_list.index(month)
+                                                                    month_event = month_en_list[k]
+                                                                
+                                                                
+                                                            data_for_wordpress = dictionary.import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,sport_event,prompt_for_import_product,actual_year,prompt_initial,month_eng,name_NFT,month_event)
                                                             
                                                             #J'ai toutes les valeurs pour l'Excel, j'envoi les données du dictionnaire vers la liste qui servira à compléter l'Excel à la date du scrapping
                                                             data_for_wordpress_list.append(data_for_wordpress)
@@ -703,7 +723,14 @@ if result.status_code == 200:
                                                             #Ci-dessous les éléments spécifiques à intégrer à la feuille qui permet l'import des produits dans WP
                                                             prompt_for_import_product = name_NFT + ".png"
                                                             short_winner = create_short_winner(winner) #Sert pour réduire la taille du titre de la carte sur le site
-                                                            data_for_wordpress = dictionary.import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,sport_event, prompt_for_import_product, actual_year, scrapping_month,prompt_initial, month_eng, date_event,name_NFT)
+                                                            
+                                                            #Je dois récupérer le mois de l'event et le mettre dans le tag (et non pas mettre le mois du scrapping). Certaines compétitions commencent en fev et l'event a lieu en mars par ex
+                                                            #Pour les events en indiv, je prends la date de l'event et je chope le mois dedans
+                                                            for month in month_en_list :
+                                                                if month in date_event :
+                                                                    month_event = month
+                                                            
+                                                            data_for_wordpress = dictionary.import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,sport_event,prompt_for_import_product,actual_year,prompt_initial,month_eng,name_NFT,month_event)
                                                             
                                                             #J'ai toutes les valeurs pour l'Excel, j'envoi les données du dictionnaire vers la liste qui servira à compléter l'Excel à la date du scrapping
                                                             data_for_wordpress_list.append(data_for_wordpress)
@@ -758,7 +785,12 @@ if result.status_code == 200:
         print("\033[4m" + 'Manque les pays suivants dans COUNTRY :' + "\033[0m", end="")
         print()
         for no_country in no_country_list:
-            print(f" - {no_country}")
+            if no_country in IME_country_list:
+                pass
+            else:
+                print(f"{no_country}")
+                print()
+        print("\033[4m" + 'Ajouter les lignes à ignorer en colonne A de IME' + "\033[0m", end="")
         print(f'-------------------------')
         print()   
 
@@ -766,7 +798,13 @@ if result.status_code == 200:
         print("\033[4m" + 'Manque les villes suivantes dans CITY :' + "\033[0m", end="")
         print()
         for no_city in no_city_list:
-            print(f" - {no_city}")
+            no_city = no_city.strip()
+            if no_city in IME_city_list:
+                pass
+            else:
+                print(f"{no_city}")
+        print()
+        print("\033[4m" + 'Ajouter les lignes à ignorer en colonne B de IME' + "\033[0m", end="")
         print(f'-------------------------')
         print()
 
@@ -777,12 +815,17 @@ if result.status_code == 200:
             print(f" - {no_sport}")
         print(f'-------------------------')
         print()
-        
+
     if no_sport_competition_list :
         print("\033[4m" + 'Manque les compétitions suivantes dans COMPETITION :' + "\033[0m", end="")
         print()
         for no_sport_competition in no_sport_competition_list:
-            print(f" - {no_sport_competition}")
+            if no_sport_competition in IME_competition_list:
+                pass
+            else:
+                print(f"{no_sport_competition}")
+                print()
+        print("\033[4m" + 'Ajouter les lignes à ignorer en colonne C de IME' + "\033[0m", end="")
         print(f'-------------------------')
         print()
         
@@ -790,9 +833,14 @@ if result.status_code == 200:
         print("\033[4m" +'Manque les "compétitions of sport" suivantes dans COMP OF SPORT :' + "\033[0m", end="")
         print()
         for no_competition_of_sport in no_competition_of_sport_list:
-            print(f" - {no_competition_of_sport}")
+            if no_competition_of_sport in IME_comp_of_sport_list:
+                pass
+            else:
+                print(f"{no_competition_of_sport}")
         print("\033[4m" +"Ces résultats ne sont pas présents dans l'Excel" + "\033[0m", end="")
         print()
+        print()
+        print("\033[4m" + 'Ajouter les lignes à ignorer en colonne D de IME' + "\033[0m", end="")
         print(f'-------------------------')
         print()
 
@@ -800,8 +848,13 @@ if result.status_code == 200:
         print("\033[4m" +'Manque les events suivants dans EVENT :' + "\033[0m", end="")
         print()
         for no_event in no_event_list:
-            print(f" - {no_event}")
-        print("\033[4m" +"Ces résultats SONT dans l'Excel donc le prompt n'a pas l'event. A prendre en considération" + "\033[0m", end="")
+            if no_event in IME_events_list:
+                pass
+            else:
+                print(f"{no_event}")
+        print("\033[4m" +"Ces résultats SONT dans l'Excel donc le prompt n'a pas d'event. A prendre en considération" + "\033[0m", end="")
+        print()
+        print("\033[4m" + 'Ajouter les lignes à ignorer en colonne E de IME' + "\033[0m", end="")
         print(f'-------------------------')
         print()
         
@@ -809,7 +862,12 @@ if result.status_code == 200:
         print("\033[4m" +"Probablement que HOMME/FEMME dans l'event, vérifier tout de même s'il ne manque pas une traduction dans EVENT :" + "\033[0m", end="")
         print()
         for just_men_woman in just_men_woman_list:
-            print(f" - {just_men_woman}")
+            if just_men_woman in IME_just_men_woman_list:
+                pass
+            else:
+                print(f"{just_men_woman}")
+        print()
+        print("\033[4m" + 'Ajouter les lignes à ignorer en colonne F de IME' + "\033[0m", end="")
         print(f'-------------------------')
         print()
         
@@ -817,7 +875,12 @@ if result.status_code == 200:
         print("\033[4m" +'Pages très probablement vides :' + "\033[0m", end="")
         print()
         for no_event_probably_empty in no_event_probably_empty_list:
-            print(f" - {no_event_probably_empty}")
+            if no_event_probably_empty in IME_no_event_probably_empty_list:
+                pass
+            else:
+                print(f"{no_event_probably_empty}")
+        print()
+        print("\033[4m" + 'Ajouter les lignes à ignorer en colonne G de IME' + "\033[0m", end="")
         print(f'-------------------------')
         print()
 
@@ -825,7 +888,12 @@ if result.status_code == 200:
         print("\033[4m" +"Manque les dates d'event suivantes dans DATE :" + "\033[0m", end="")
         print()
         for no_date_event in no_date_event_list:
-            print(f" - {no_date_event}")
+            if no_date_event in IME_no_date_event_list:
+                pass
+            else:
+                print(f"{no_date_event}")
+        print()
+        print("\033[4m" + 'Ajouter les lignes à ignorer en colonne H de IME' + "\033[0m", end="")
         print(f'-------------------------')
         print()
         
@@ -833,7 +901,7 @@ if result.status_code == 200:
         print("\033[4m" +"Manque un gagnant dans les events suivants :" + "\033[0m", end="")
         print()
         for no_winner in no_winner_list:
-            print(f" - {no_winner}")
+            print(f"{no_winner}")
         print(f'-------------------------')
         print()
         
@@ -841,7 +909,7 @@ if result.status_code == 200:
         print("\033[4m" + "Manque les abréviations suivantes dans ABREVIATION : " + "\033[0m", end="")
         print()
         for abr_translation in no_abr_list:
-            print(f" - {abr_translation}")
+            print(f"{abr_translation}")
         print(f'-------------------------')
         print()       
      
@@ -849,16 +917,33 @@ if result.status_code == 200:
         print("\033[4m" + "Ces athlètes ont remporté plusieurs épreuves le même jour : " + "\033[0m", end="")
         print()
         for winnings_same_day in multiple_winnings_same_day_list:
-            print(f" - {winnings_same_day}")
+            if winnings_same_day in IME_multiple_winnings_same_day_list:
+                pass
+            else:
+                print(f"{winnings_same_day}")
+        print()
+        print("\033[4m" + 'Ajouter les lignes à ignorer en colonne I de IME' + "\033[0m", end="")
         print(f'-------------------------')
         print()
 
     if winners_without_nft_list :
         print("\033[4m" + "Voici les prompts pour créer les images sur Midjourney des derniers vainqueurs identifiés " + "\033[0m", end="")
         print()
+        tour=0
+        new_prompts = 0
         for winner_without_nft_list in winners_without_nft_list:
-            print()
-            print(f"{winner_without_nft_list['Prompt']} {midjourney_parameters}")
+            if tour < 15:
+                print()
+                print(f"{winner_without_nft_list['Prompt']} {midjourney_parameters}")
+                tour +=1
+                new_prompts +=1
+            else:
+                tour=0
+                print("--------------------------------------------------")
+                print()
+        print()
+        print(f'--------------------------------------------------')
+        print(f"Nous avons {new_prompts} nouveaux prompts")
         print(f'--------------------------------------------------')
         print()
 

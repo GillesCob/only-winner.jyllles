@@ -15,9 +15,9 @@ from datetime import datetime
 actual_year = str(datetime.now().year)
 actual_month = str(datetime.now().month)
 actual_day = str(datetime.now().day)
-scrapping_month = "Mars"
+scrapping_month = "Février"
 Feuille_datas = str(actual_day)
-diapositive_xx = 9
+diapositive_xx = 56
 
 comp_of_sport_list = []
 comp_of_sport_card_list = []

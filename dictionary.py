@@ -32,7 +32,7 @@ def add_to_today_sheet (EVENT_SPECIFIC_COUNTER,competition_date,country,city,spo
         "Nom NFT" : name_NFT,
         }
 
-def import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,sport_event, prompt_for_import_product, actual_year, actual_month,prompt_initial, month_eng,date_event,name_NFT):
+def import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,sport_event,prompt_for_import_product,actual_year,prompt_initial,month_eng,name_NFT,month_event):
     return {
     'ID' : f"{EVENT_COUNTER}",
     'Type' : "external",
@@ -60,7 +60,7 @@ def import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,
     'Sale price' : "",
     'Regular price?' : "1",
     'Categories' : f"{sport},{sport}>{sport_competition},{sport}>{sport_competition}>{sport_event}",
-    'Tags' : f"{actual_year}, {month_eng}-{actual_year}",
+    'Tags' : f"{actual_year}, {month_event}-{actual_year}",
     'Shipping class' : "",
     'Images' : f"https://www.only-winners.jyllles.com/wp-content/uploads/2024/03/{prompt_for_import_product}",
     'Download limit' : "",

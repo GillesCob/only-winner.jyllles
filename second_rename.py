@@ -6,11 +6,11 @@ import shutil
 
 actual_day = str(datetime.now().day)
 actual_year = str(datetime.now().year)
-scrapping_month = "Février"
+scrapping_month = "Janvier"
 Feuille_datas = str(actual_day)
 
 # Chemin vers le fichier Excel
-excel_month_file_path = f'/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/2024/{scrapping_month}/EXCEL/DATAS 2.xlsx'
+excel_month_file_path = f'/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/2024/{scrapping_month}/EXCEL/DATAS.xlsx'
 
 # Lire les données Excel en utilisant pandas depuis la feuille du jour
 df1 = pd.read_excel(excel_month_file_path, sheet_name=Feuille_datas)

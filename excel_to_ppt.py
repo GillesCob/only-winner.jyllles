@@ -15,14 +15,14 @@ from datetime import datetime
 actual_year = str(datetime.now().year)
 actual_month = str(datetime.now().month)
 actual_day = str(datetime.now().day)
-scrapping_month = "Février"
+scrapping_month = "Janvier"
 Feuille_datas = str(actual_day)
-diapositive_xx = 56
+diapositive_xx = 156
 
 comp_of_sport_list = []
 comp_of_sport_card_list = []
 # Charger le fichier Excel
-excel_month_file_path = f'/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/2024/{scrapping_month}/EXCEL/DATAS 2.xlsx'
+excel_month_file_path = f'/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/2024/{scrapping_month}/EXCEL/DATAS.xlsx'
 excel_BDD_INITIALE_file_path = f'/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/BDD INITIALE.xlsx'
 
 excel_month_workbook = load_workbook(excel_month_file_path)

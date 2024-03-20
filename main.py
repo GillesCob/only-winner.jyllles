@@ -12,7 +12,7 @@ import re
 import os
 
 #Seule variable à changer, mois à scrapper en français
-scrapping_month = 'Février'
+scrapping_month = 'Janvier'
 actual_day = int(datetime.now().day)
 verif_date_event = actual_day-13
 jours_depuis_dernier_scrapping = 1 #Mettre 1 si scrapping fait hier, ...
@@ -81,6 +81,7 @@ def rename_prompt_for_midjourney(name_NFT): #Modification du prompt pour corresp
     prompt_midjourney = prompt_midjourney.replace("ä", "a")
     prompt_midjourney = prompt_midjourney.replace("ß", "")
     prompt_midjourney = "jyllles_" + prompt_midjourney
+    prompt_midjourney = prompt_midjourney[:60]
     new_winners_one_sheet['Prompt_Midjourney'] = prompt_midjourney
     
     
@@ -193,12 +194,13 @@ no_date_event_list = []
 no_winner_list = []
 no_abr_list = []
 multiple_winnings_same_day_list = []
+cards_ignored_list = []
 
 
 
 #----------------------VERIFS EXCEL----------------------#
 #1 - Est-ce que le fichier Excel existe ?
-nom_excel_month = f'/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/2024/{scrapping_month}/EXCEL/DATAS 2.xlsx'
+nom_excel_month = f'/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/2024/{scrapping_month}/EXCEL/DATAS.xlsx'
 nom_exel_bdd_datas = f'/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/BDD INITIALE.xlsx'
 try:
     classeur_excel_month_exist = openpyxl.load_workbook(nom_excel_month)
@@ -316,7 +318,7 @@ IME_just_men_woman_list = [cell.value for cell in ignore_month_elements_sheet['F
 IME_no_event_probably_empty_list = [cell.value for cell in ignore_month_elements_sheet['G'] if cell.value is not None]
 IME_no_date_event_list = [cell.value for cell in ignore_month_elements_sheet['H'] if cell.value is not None]
 IME_multiple_winnings_same_day_list = [cell.value for cell in ignore_month_elements_sheet['I'] if cell.value is not None]
-
+IME_ignore_cards_list = [cell.value for cell in ignore_month_elements_sheet['J'] if cell.value is not None]
 
 
 if scrapping_month in month_fr_list:
@@ -430,7 +432,7 @@ if result.status_code == 200:
                                     sport_competition = Good_competition_eng
                             else:
                                 no_sport_competition_list.append(sport_competition)
-                                sport_competition = None
+                                sport_competition = ""
                         else:
                             print("Aucune chance d'arriver ici. Pas de valeur dans la 3ème colonne du tableau principal")       
 
@@ -712,29 +714,32 @@ if result.status_code == 200:
                                                         
 
                                                         if name_NFT not in winners_with_nft_list : #La carte n'est pas encore créée. j'envoi ces données dans la liste du jour
-                                                            #Ci-dessous les éléments spécifiques à intégrer à la feuille contenant les évènements n'ayant pas encore de carte
-                                                            EVENT_SPECIFIC_COUNTER +=1
-                                                            new_winners_one_sheet = dictionary.add_to_today_sheet(EVENT_SPECIFIC_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event, prompt_initial, actual_year,name_NFT)
-                                                            rename_prompt_for_midjourney(prompt_initial)
-                                                            
-                                                            #J'ai toutes les valeurs pour l'Excel, j'envoi les données du dictionnaire vers la page du jour qui contient tous les events sans cartes
-                                                            winners_without_nft_list.append(new_winners_one_sheet)
-                                                            
-                                                            #Ci-dessous les éléments spécifiques à intégrer à la feuille qui permet l'import des produits dans WP
-                                                            prompt_for_import_product = name_NFT + ".png"
-                                                            short_winner = create_short_winner(winner) #Sert pour réduire la taille du titre de la carte sur le site
-                                                            
-                                                            #Je dois récupérer le mois de l'event et le mettre dans le tag (et non pas mettre le mois du scrapping). Certaines compétitions commencent en fev et l'event a lieu en mars par ex
-                                                            #Pour les events en indiv, je prends la date de l'event et je chope le mois dedans
-                                                            for month in month_en_list :
-                                                                if month in date_event :
-                                                                    month_event = month
-                                                            
-                                                            data_for_wordpress = dictionary.import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,sport_event,prompt_for_import_product,actual_year,prompt_initial,month_eng,name_NFT,month_event)
-                                                            
-                                                            #J'ai toutes les valeurs pour l'Excel, j'envoi les données du dictionnaire vers la liste qui servira à compléter l'Excel à la date du scrapping
-                                                            data_for_wordpress_list.append(data_for_wordpress)
-                                                        
+                                                            if name_NFT not in IME_ignore_cards_list :
+                                                                #Ci-dessous les éléments spécifiques à intégrer à la feuille contenant les évènements n'ayant pas encore de carte
+                                                                EVENT_SPECIFIC_COUNTER +=1
+                                                                new_winners_one_sheet = dictionary.add_to_today_sheet(EVENT_SPECIFIC_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event, prompt_initial, actual_year,name_NFT)
+                                                                rename_prompt_for_midjourney(prompt_initial)
+                                                                
+                                                                #J'ai toutes les valeurs pour l'Excel, j'envoi les données du dictionnaire vers la page du jour qui contient tous les events sans cartes
+                                                                winners_without_nft_list.append(new_winners_one_sheet)
+                                                                
+                                                                #Ci-dessous les éléments spécifiques à intégrer à la feuille qui permet l'import des produits dans WP
+                                                                prompt_for_import_product = name_NFT + ".png"
+                                                                short_winner = create_short_winner(winner) #Sert pour réduire la taille du titre de la carte sur le site
+                                                                
+                                                                #Je dois récupérer le mois de l'event et le mettre dans le tag (et non pas mettre le mois du scrapping). Certaines compétitions commencent en fev et l'event a lieu en mars par ex
+                                                                #Pour les events en indiv, je prends la date de l'event et je chope le mois dedans
+                                                                for month in month_en_list :
+                                                                    if month in date_event :
+                                                                        month_event = month
+                                                                
+                                                                data_for_wordpress = dictionary.import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,sport_event,prompt_for_import_product,actual_year,prompt_initial,month_eng,name_NFT,month_event)
+                                                                
+                                                                #J'ai toutes les valeurs pour l'Excel, j'envoi les données du dictionnaire vers la liste qui servira à compléter l'Excel à la date du scrapping
+                                                                data_for_wordpress_list.append(data_for_wordpress)
+
+                                                            else : 
+                                                                cards_ignored_list.append(f"{winner} - {name_NFT}")
                                                     else:
                                                         no_winner_list.append(f"BALISE_no_winner 2 : {url_event}")
                                                     
@@ -925,6 +930,17 @@ if result.status_code == 200:
         print("\033[4m" + 'Ajouter les lignes à ignorer en colonne I de IME' + "\033[0m", end="")
         print(f'-------------------------')
         print()
+        
+    if cards_ignored_list :
+        print("\033[4m" + "Ces cartes ne seront pas créées, l'event est bien dans ALL : " + "\033[0m", end="")
+        print()
+        for cards_ignored in cards_ignored_list :
+            print(f"{cards_ignored}")
+        print()
+        print("\033[4m" + 'Cartes exclues présentes en colonne J de IME' + "\033[0m", end="")
+        print(f'-------------------------')
+        print()
+        
 
     if winners_without_nft_list :
         print("\033[4m" + "Voici les prompts pour créer les images sur Midjourney des derniers vainqueurs identifiés " + "\033[0m", end="")

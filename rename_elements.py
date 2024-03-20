@@ -2,20 +2,20 @@ import os
 import pandas as pd
 from datetime import datetime
 
-MOIS_SCRAPPE = "Février"
+MOIS_SCRAPPE = "Janvier"
 Nom_page_prompt_avant_apres = "coucou"
 nom_colonne_ancien_prompt = "avant"
 nom_colonne_nouveau_prompt = "après"
 nouveau_dossier = "renommé"
 
 # Chemin vers le fichier Excel
-chemin_excel = f'/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/2024/{MOIS_SCRAPPE}/EXCEL/DATAS 2.xlsx'
+chemin_excel = f'/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/2024/{MOIS_SCRAPPE}/EXCEL/DATAS.xlsx'
 
 # Lire les données Excel en utilisant pandas depuis la feuille "coucou"
 df = pd.read_excel(chemin_excel, sheet_name=Nom_page_prompt_avant_apres)
 
 # Dossier contenant les images à renommer
-dossier_images = f"/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/2024/{MOIS_SCRAPPE}/IMAGES_MIDJOURNEY"
+dossier_images = f"/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/2024/{MOIS_SCRAPPE}/NFT_READY"
 
 # Dossier de destination pour les images renommées
 dossier_images_renamed = f"/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/2024/{MOIS_SCRAPPE}/{nouveau_dossier}"

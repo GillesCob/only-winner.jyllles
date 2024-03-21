@@ -1,0 +1,22 @@
+.container {
+    position: relative;
+    width: 300px;
+    height: 200px;
+    margin: 0 auto;
+}
+
+.gray-rectangle {
+    width: 100%;
+    height: 100%;
+    background-color: #ccc; /* Gris */
+}
+
+.orange-rectangle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px;
+    height: 50px;
+    background-color: orange;
+}

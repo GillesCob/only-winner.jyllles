@@ -6,10 +6,9 @@ import openpyxl
 
 #ATTENTION : BIEN LIRE LES INFOS SUIVANTES : 
 #Va transformer la syntaxe Midjourney en Prompt présents dans l'excel
-#Si j'ai un commentaire dans la colonne "Commentaire" alors je ne traite pas l'image
 #Attention à bien mettre à jour le mois concerné !
 
-scrapping_month = "Janvier"
+scrapping_month = "Mars"
 actual_day = int(datetime.now().day)
 excel_sheet = str(actual_day)
 
@@ -21,7 +20,7 @@ df = pd.read_excel(chemin_excel, sheet_name=excel_sheet)
 # Chemin vers le dossier contenant les images
 dossier_images = "/Users/gillescobigo/Downloads"
 # Chemin vers le dossier contenant les images renommées
-dossier_images_renamed = f"/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/2024/{scrapping_month}/IMAGES_MIDJOURNEY/VERIF APRES RENOMMAGE"
+dossier_images_renamed = f"/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/2024/{scrapping_month}/IMAGES_MIDJOURNEY"
 
 
 classeur_month = openpyxl.load_workbook(chemin_excel)

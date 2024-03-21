@@ -6,7 +6,7 @@ import shutil
 
 actual_day = str(datetime.now().day)
 actual_year = str(datetime.now().year)
-scrapping_month = "Janvier"
+scrapping_month = "Mars"
 Feuille_datas = str(actual_day)
 
 # Chemin vers le fichier Excel

@@ -1,32 +1,16 @@
-from selenium import webdriver
-from webdriver_manager.chrome import ChromeDriverManager
-from PIL import Image
+import imgkit
 
-# Chemin du fichier HTML local
-file_path = "/Users/gillescobigo/Documents/GitHub/only-winner.jyllles/cards.html"
+# Chemin vers votre fichier HTML
+html_file = '/Users/gillescobigo/Documents/GitHub/only-winner.jyllles/cards.html'
 
-# Configuration du navigateur
-options = webdriver.ChromeOptions()
-options.add_argument('headless')  # Exécuter le navigateur en mode headless (sans interface graphique)
+# Chemin vers l'emplacement où vous souhaitez enregistrer l'image PNG
+output_file = '/Users/gillescobigo/Desktop/test.png'
 
-# Initialisation du navigateur
-driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
+# Options pour imgkit (vous pouvez ajuster selon vos besoins)
+options = {
+    'quiet': '',
+    'disable-smart-width': ''
+}
 
-# Charger le fichier HTML local
-driver.get("file:///" + file_path)
-
-# Attendre quelques secondes pour s'assurer que tous les éléments sont chargés
-driver.implicitly_wait(5)
-
-# Prendre une capture d'écran de la page entière
-screenshot = driver.get_screenshot_as_png()
-
-# Fermer le navigateur
-driver.quit()
-
-# Enregistrer la capture d'écran en tant qu'image PNG
-output_path = "screenshot.png"
-with open(output_path, "wb") as f:
-    f.write(screenshot)
-
-print(f"Capture d'écran enregistrée sous : {output_path}")
+# Convertir HTML en image PNG
+imgkit.from_file(html_file, output_file, options=options)

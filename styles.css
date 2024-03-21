@@ -18,7 +18,7 @@
     position: absolute;
     width: 1950px;
     height: 2950px;
-    background: linear-gradient(to top right, #C69933, #725719); /* Dégradé linéaire de gauche à droite */
+    background: linear-gradient(to top right, #deb046, #725719); /* Dégradé linéaire de gauche à droite */
 }
 
 .competition {
@@ -39,11 +39,37 @@
     font-size: 100px; /* Taille de la police */
 }
 
+.fond-prompt {
+    position: absolute;
+    width: 1794px;
+    height: 1000px;
+    bottom: 100px; 
+    background: hsla(0, 0%, 71%, 0.8);
+    border-radius: 20px; /* Bords arrondis de 20px */
+    border: 1px solid black;
+}
+
+.prompt {
+    position: absolute;
+    top: 2183px; /* À 2183 pixels du haut du conteneur */
+    left: 50%; /* Centrer horizontalement */
+    transform: translateX(-50%); /* Centrer horizontalement */
+    width: 1700px; /* Largeur de la zone de texte */
+    height: 686px; /* Hauteur de la zone de texte */
+    color: black; /* Couleur du texte */
+    font-size: 80px; /* Taille de la police */
+    text-align: center; /* Centrer le texte horizontalement */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    line-height: 100px; /* Hauteur de ligne de 100 */
+}
+
 .image {
     position: absolute;
-    top: 50%; /* Centrer verticalement */
+    top: 355.5px; /* Centrer verticalement */
     left: 50%; /* Centrer horizontalement */
-    transform: translate(-50%, -50%); /* Centrer horizontalement et verticalement */
+    transform: translate(-50%); /* Centrer horizontalement */
     width: 1800px;
     height: 1800px;
     max-width: 100%;

@@ -3,7 +3,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from PIL import Image
 
 # Chemin du fichier HTML local
-file_path = "chemin_vers_votre_fichier/index.html"
+file_path = "/Users/gillescobigo/Documents/GitHub/only-winner.jyllles/cards.html"
 
 # Configuration du navigateur
 options = webdriver.ChromeOptions()

@@ -806,26 +806,28 @@ for month in months_scrapped :
 
     #J'imprime en fin de scrapping toutes les erreures ensembles par catégorie afin de faciliter la lecture
         print()
-        print(f'----------------------------------------------------------------------------------------------------')
-        print("ERREURS IDENTIFIEES : ")
-        print(f'----------------------------------------------------------------------------------------------------')
-        print() 
+        print(f"ERREURS IDENTIFIEES EN {scrapping_month}")
+        print()
+        print()
+        print()
+        print()
 
         if no_country_list :
-            print("\033[4m" + 'Manque les pays suivants dans COUNTRY :' + "\033[0m", end="")
+            print("\033[4m" + 'Manque les pays suivants dans COUNTRY. Ajouter les lignes à ignorer en colonne A de IME :' + "\033[0m", end="")
+            print()
             print()
             for no_country in no_country_list:
                 if no_country in IME_country_list:
                     pass
                 else:
                     print(f"{no_country}")
-                    print()
-            print("\033[4m" + 'Ajouter les lignes à ignorer en colonne A de IME' + "\033[0m", end="")
-            print(f'-------------------------')
-            print()   
-
+            print(f'---------------------------------------------------------------------------------------------------------------------------------------------------------------')
+            print()
+            print()
+            print()
+            
         if no_city_list :
-            print("\033[4m" + 'Manque les villes suivantes dans CITY :' + "\033[0m", end="")
+            print("\033[4m" + 'Manque les villes suivantes dans CITY. Ajouter les lignes à ignorer en colonne B de IME' + "\033[0m", end="")
             print()
             for no_city in no_city_list:
                 no_city = no_city.strip()
@@ -833,142 +835,160 @@ for month in months_scrapped :
                     pass
                 else:
                     print(f"{no_city}")
+            print(f'---------------------------------------------------------------------------------------------------------------------------------------------------------------')
             print()
-            print("\033[4m" + 'Ajouter les lignes à ignorer en colonne B de IME' + "\033[0m", end="")
-            print(f'-------------------------')
             print()
-
+            print()
+            
         if no_sport_list :
             print("\033[4m" + 'Manque les sports suivants dans SPORT :' + "\033[0m", end="")
             print()
             for no_sport in no_sport_list:
                 print(f" - {no_sport}")
-            print(f'-------------------------')
             print()
-
+            print(f'---------------------------------------------------------------------------------------------------------------------------------------------------------------')
+            print()
+            print()
+            print()
+            
         if no_sport_competition_list :
-            print("\033[4m" + 'Manque les compétitions suivantes dans COMPETITION :' + "\033[0m", end="")
+            print("\033[4m" + 'Manque les compétitions suivantes dans COMPETITION. Ajouter les lignes à ignorer en colonne C de IME' + "\033[0m", end="")
+            print()
             print()
             for no_sport_competition in no_sport_competition_list:
                 if no_sport_competition in IME_competition_list:
                     pass
                 else:
                     print(f"{no_sport_competition}")
-                    print()
-            print("\033[4m" + 'Ajouter les lignes à ignorer en colonne C de IME' + "\033[0m", end="")
-            print(f'-------------------------')
+            print(f'---------------------------------------------------------------------------------------------------------------------------------------------------------------')
+            print()
+            print()
             print()
             
         if no_competition_of_sport_list :
-            print("\033[4m" +'Manque les "compétitions of sport" suivantes dans COMP OF SPORT :' + "\033[0m", end="")
+            print("\033[4m" +'Manque les "compétitions of sport" suivantes dans COMP OF SPORT. Ajouter les lignes à ignorer en colonne D de IME' + "\033[0m", end="")
+            print()
+            print("\033[4m" +"Ces résultats NE SONT PAS présents dans l'Excel" + "\033[0m", end="")
+            print()
             print()
             for no_competition_of_sport in no_competition_of_sport_list:
                 if no_competition_of_sport in IME_comp_of_sport_list:
                     pass
                 else:
                     print(f"{no_competition_of_sport}")
-            print("\033[4m" +"Ces résultats ne sont pas présents dans l'Excel" + "\033[0m", end="")
+            print(f'---------------------------------------------------------------------------------------------------------------------------------------------------------------')
             print()
             print()
-            print("\033[4m" + 'Ajouter les lignes à ignorer en colonne D de IME' + "\033[0m", end="")
-            print(f'-------------------------')
             print()
-
+            
         if no_event_list :
-            print("\033[4m" +'Manque les events suivants dans EVENT :' + "\033[0m", end="")
+            print("\033[4m" +'Manque les events suivants dans EVENT. Ajouter les lignes à ignorer en colonne E de IME' + "\033[0m", end="")
+            print()
+            print("\033[4m" +"Ces résultats SONT dans l'Excel donc le prompt n'a pas d'event. A prendre en considération" + "\033[0m", end="")
+            print()
             print()
             for no_event in no_event_list:
                 if no_event in IME_events_list:
                     pass
                 else:
                     print(f"{no_event}")
-            print("\033[4m" +"Ces résultats SONT dans l'Excel donc le prompt n'a pas d'event. A prendre en considération" + "\033[0m", end="")
+            print(f'---------------------------------------------------------------------------------------------------------------------------------------------------------------')
             print()
-            print("\033[4m" + 'Ajouter les lignes à ignorer en colonne E de IME' + "\033[0m", end="")
-            print(f'-------------------------')
+            print()
             print()
             
         if just_men_woman_list :
-            print("\033[4m" +"Probablement que HOMME/FEMME dans l'event, vérifier tout de même s'il ne manque pas une traduction dans EVENT :" + "\033[0m", end="")
+            print("\033[4m" +"Probablement que HOMME/FEMME dans l'event. Ajouter infos en Col E de IME. Ajouter les lignes à ignorer en colonne F de IME" + "\033[0m", end="")
+            print()
             print()
             for just_men_woman in just_men_woman_list:
                 if just_men_woman in IME_just_men_woman_list:
                     pass
                 else:
                     print(f"{just_men_woman}")
+            print(f'---------------------------------------------------------------------------------------------------------------------------------------------------------------')
             print()
-            print("\033[4m" + 'Ajouter les lignes à ignorer en colonne F de IME' + "\033[0m", end="")
-            print(f'-------------------------')
+            print()
             print()
             
         if no_event_probably_empty_list :
-            print("\033[4m" +'Pages très probablement vides :' + "\033[0m", end="")
+            print("\033[4m" +'Pages très probablement vides. Ajouter les lignes à ignorer en colonne G de IME' + "\033[0m", end="")
+            print()
             print()
             for no_event_probably_empty in no_event_probably_empty_list:
                 if no_event_probably_empty in IME_no_event_probably_empty_list:
                     pass
                 else:
                     print(f"{no_event_probably_empty}")
+            print(f'---------------------------------------------------------------------------------------------------------------------------------------------------------------')
             print()
-            print("\033[4m" + 'Ajouter les lignes à ignorer en colonne G de IME' + "\033[0m", end="")
-            print(f'-------------------------')
             print()
-
+            print()
+            
         if no_date_event_list :
-            print("\033[4m" +"Manque les dates d'event suivantes dans DATE :" + "\033[0m", end="")
+            print("\033[4m" +"Manque les dates d'event suivantes dans DATE. Ajouter les lignes à ignorer en colonne H de IME" + "\033[0m", end="")
+            print()
             print()
             for no_date_event in no_date_event_list:
                 if no_date_event in IME_no_date_event_list:
                     pass
                 else:
                     print(f"{no_date_event}")
+            print(f'---------------------------------------------------------------------------------------------------------------------------------------------------------------')
             print()
-            print("\033[4m" + 'Ajouter les lignes à ignorer en colonne H de IME' + "\033[0m", end="")
-            print(f'-------------------------')
+            print()
             print()
             
         if no_winner_list :
             print("\033[4m" +"Manque un gagnant dans les events suivants :" + "\033[0m", end="")
             print()
+            print()
             for no_winner in no_winner_list:
                 print(f"{no_winner}")
-            print(f'-------------------------')
+            print(f'---------------------------------------------------------------------------------------------------------------------------------------------------------------')
+            print()
+            print()
             print()
             
         if no_abr_list:
             print("\033[4m" + "Manque les abréviations suivantes dans ABREVIATION : " + "\033[0m", end="")
             print()
+            print()
             for abr_translation in no_abr_list:
-                print(f"{abr_translation}")
-            print(f'-------------------------')
-            print()       
-        
+                print(f"{abr_translation}")    
+            print(f'---------------------------------------------------------------------------------------------------------------------------------------------------------------')
+            print()
+            print()
+            print()
+            
         if multiple_winnings_same_day_list :
-            print("\033[4m" + "Ces athlètes ont remporté plusieurs épreuves le même jour : " + "\033[0m", end="")
+            print("\033[4m" + "Ces athlètes ont remporté plusieurs épreuves le même jour. Ajouter les lignes à ignorer en colonne I de IME" + "\033[0m", end="")
+            print()
             print()
             for winnings_same_day in multiple_winnings_same_day_list:
                 if winnings_same_day in IME_multiple_winnings_same_day_list:
                     pass
                 else:
-                    print(f"{winnings_same_day}")
+                    print(f"{winnings_same_day}") 
+            print(f'---------------------------------------------------------------------------------------------------------------------------------------------------------------')
             print()
-            print("\033[4m" + 'Ajouter les lignes à ignorer en colonne I de IME' + "\033[0m", end="")
-            print(f'-------------------------')
             print()
-            
+            print()
+        
         if cards_ignored_list :
-            print("\033[4m" + "Ces cartes ne seront pas créées, l'event est bien dans ALL : " + "\033[0m", end="")
+            print("\033[4m" + "Ces cartes ne seront pas créées, l'event est bien dans ALL. Cartes exclues présentes en colonne J de IME" + "\033[0m", end="")
+            print()
             print()
             for cards_ignored in cards_ignored_list :
                 print(f"{cards_ignored}")
+            print(f'---------------------------------------------------------------------------------------------------------------------------------------------------------------')
             print()
-            print("\033[4m" + 'Cartes exclues présentes en colonne J de IME' + "\033[0m", end="")
-            print(f'-------------------------')
+            print()
             print()
             
-
         if winners_without_nft_list :
             print("\033[4m" + "Voici les prompts pour créer les images sur Midjourney des derniers vainqueurs identifiés " + "\033[0m", end="")
+            print()
             print()
             tour=0
             new_prompts = 0

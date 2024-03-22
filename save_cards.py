@@ -3,19 +3,16 @@ from datetime import datetime
 from openpyxl import load_workbook
 from flask import Flask, render_template
 
-
-
 hti = Html2Image(size=(1000,1500))
 
 #Données de départ
-scrapping_month = "Avril"
+scrapping_month = "Mars"
 actual_day = str(datetime.now().day)
 Feuille_datas = str(actual_day)
 
 #Chemins vers mes 2 fichiers excel
 excel_data_file_path = f'/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/2024/{scrapping_month}/EXCEL/DATAS.xlsx'
 excel_BDD_INITIALE_file_path = f'/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/BDD INITIALE.xlsx'
-
 
 
 #Chargement des fichiers Excel
@@ -74,8 +71,6 @@ for cell in excel_sheet['M'][1:]:
         NOM_NFT_list.append(cell.value)
         
 
-
-
 for index, competition in enumerate(COMP_OF_SPORT_list) :
     comp_of_sport = competition
     prompt = PROMPT_list[index]
@@ -93,6 +88,8 @@ for index, competition in enumerate(COMP_OF_SPORT_list) :
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Rectangles</title>
+        
+        
         <style>
             /* Ajoutez votre CSS ici */
             .container {{
@@ -173,6 +170,8 @@ for index, competition in enumerate(COMP_OF_SPORT_list) :
                 max-height: 100%;
             }}
         </style>
+        
+        
     </head>
     <body>
         <div class="container">
@@ -187,7 +186,7 @@ for index, competition in enumerate(COMP_OF_SPORT_list) :
     </body>
     </html>
     """
-    scrapping_month = "Avril"
+    
     # Chemin vers le dossier de sauvegarde (fichier général + fichier du jour pour faciliter l'import des images sur WP)
     save_folder_paths = [f"/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/2024/{scrapping_month}/NFT_READY", f"/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/2024/{scrapping_month}/NFT_READY/IMPORT WP/{actual_day}"]
     

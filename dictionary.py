@@ -15,7 +15,7 @@ def add_to_ALL_sheet (competition_date,country,city,sport,sport_competition,spor
         'Lien' : url_event,
         }
 
-def add_to_today_sheet (EVENT_SPECIFIC_COUNTER,competition_date,country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event,prompt_initial, actual_year,name_NFT):
+def add_to_today_sheet (EVENT_SPECIFIC_COUNTER,competition_date,country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event,prompt_initial, actual_year,name_NFT,winner_tweet):
     return {
         'Diapositive name' : f"Diapositive{EVENT_SPECIFIC_COUNTER}",
         'Date_competition' : competition_date,
@@ -30,6 +30,7 @@ def add_to_today_sheet (EVENT_SPECIFIC_COUNTER,competition_date,country,city,spo
         'Lien' : url_event,
         "Prompt" : prompt_initial,
         "Nom NFT" : name_NFT,
+        "Tweet" : winner_tweet
         }
 
 def import_wordpress (EVENT_COUNTER,short_winner,winner,sport,sport_competition,sport_event,prompt_for_import_product,actual_year,prompt_initial,month_eng,name_NFT,month_event):

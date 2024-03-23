@@ -5,73 +5,73 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 100%; /* 100% de la largeur de la fenêtre */
+    width: 100%;
 }
 
 .black-rectangle {
-    width: 2000px; /* 40 cm en pixels */
-    height: 3000px; /* 60 cm en pixels */
+    width: 1000px;
+    height: 1500px;
     background-color: black;
 }
 
 .orange-rectangle {
     position: absolute;
-    width: 1950px;
-    height: 2950px;
-    background: linear-gradient(to top right, #C59833, #73581A); /* Dégradé linéaire de gauche à droite */
+    width: 975px;
+    height: 1475px;
+    background: linear-gradient(to top right, #d8aa3f, #927021);
 }
 
 .competition {
     position: absolute;
-    top: 75px; /* 1 cm en pixels (50 pixels avec 1 cm ≈ 50 pixels) */
-    left: 50%; /* Centrer horizontalement */
-    transform: translateX(-50%); /* Centrer horizontalement */
-    color: rgb(0, 0, 0); /* Couleur du texte */
-    font-size: 100px; /* Taille de la police */
+    top: 37.5px;
+    left: 75%;
+    transform: translateX(-50%);
+    color: rgb(0, 0, 0);
+    font-size: 40px;
 }
 
 .année {
     position: absolute;
-    top: 200px; /* 1 cm en pixels (50 pixels avec 1 cm ≈ 50 pixels) */
-    left: 50%; /* Centrer horizontalement */
-    transform: translateX(-50%); /* Centrer horizontalement */
-    color: rgb(0, 0, 0); /* Couleur du texte */
-    font-size: 100px; /* Taille de la police */
+    top: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgb(0, 0, 0);
+    font-size: 50px;
 }
 
 .fond-prompt {
     position: absolute;
-    width: 1794px;
-    height: 1000px;
-    bottom: 100px; 
-    background: hsla(0, 0%, 71%, 0.8);
-    border-radius: 20px; /* Bords arrondis de 20px */
+    width: 897px;
+    height: 500px;
+    bottom: 50px;
+    background: hsla(0, 0%, 71%, 0.7);
+    border-radius: 20px;
     border: 1px solid black;
 }
 
 .prompt {
     position: absolute;
-    top: 2183px; /* À 2183 pixels du haut du conteneur */
-    left: 50%; /* Centrer horizontalement */
-    transform: translateX(-50%); /* Centrer horizontalement */
-    width: 1700px; /* Largeur de la zone de texte */
-    height: 686px; /* Hauteur de la zone de texte */
-    color: black; /* Couleur du texte */
-    font-size: 80px; /* Taille de la police */
-    text-align: center; /* Centrer le texte horizontalement */
+    top: 1092px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 850px;
+    height: 343px;
+    color: black;
+    font-size: 40px;
+    text-align: center;
     display: flex;
     justify-content: center;
     align-items: center;
-    line-height: 100px; /* Hauteur de ligne de 100 */
+    line-height: 50px;
 }
 
 .image {
     position: absolute;
-    top: 355.5px; /* Centrer verticalement */
-    left: 50%; /* Centrer horizontalement */
-    transform: translate(-50%); /* Centrer horizontalement */
-    width: 1800px;
-    height: 1800px;
+    top: 178px;
+    left: 50%;
+    transform: translate(-50%);
+    width: 900px;
+    height: 900px;
     max-width: 100%;
     max-height: 100%;
 }

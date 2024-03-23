@@ -30,15 +30,14 @@ for month in months_scrapped :
     #-------------------------------GESTION DU SCRAPPING-------------------------------#
     #1er lancement main.py
     #Modifier Mois
-    #Je fais le scrapping jusqu'à la veille du jour actuel : verif_date_event. Si Scrapping sur un mois plus ancien, mettre 32 et non pas {actual_day}
 
     #Prendre en compte l'ensemble des remarques (épreuves à traduire, abréviations pays à ajouter, ...) et les modifier dans l'Excel natif
     #Relancer autant de fois qu'il le faudra pour que les erreurs soient validées
     #Création d'un excel "mois-2024.xlsx" dans le dossier Excels
-    #Phase de vérification en fonction des print()
-    #Vérifier les commentaires présents dans l'Excel (SPORT, COMPETITION, ... à ajouter)
-    #Relancer jusqu'à ce qu'ils soient réglés ou ignorés
-    #Ajouter un commentaire en colonne N en fonction des résultats de l'enquête (conséquences dans les points suivants)
+
+
+
+
 
     #-------------------------------GESTION DES IMAGES-------------------------------#
     #Créer le prompt Midjourney dans le Dashboard (suivre les instructions dans l'excel)
@@ -164,7 +163,6 @@ for month in months_scrapped :
 
     dossier_NFT = f"/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/2024/{scrapping_month}/NFT_READY" #Dossier contenant tous les NFT déjà réalisés
 
-        
 
     #----------------------LISTES----------------------#
     all_month_winners_list = [] #Liste contenant toutes les infos pour chaque event pour tout le mois
@@ -180,12 +178,7 @@ for month in months_scrapped :
     events_ok_list = [] #Liste des events passés par les différents tamis
     all_events_in_page_list = [] #Je mets les events de nomargin et centre
 
-    #----------------------LISTES TRADUCTIONS FR EN----------------------#
-    competition_of_sport_list = [] #De manière bête et méchante je vais ajouter dans cette liste {competition} of {sport}
-    competition_of_sport_traduction = [] #J'ai ici la traduction de la liste précédente pour que la traduction soit la plus exacte possible
 
-    month_fr_list = [] #Traduction du mois afin de faciliter la création des tags produit pour WP
-    month_en_list = []
 
     #----------------------LISTES POUR LE PRINT FINAL----------------------#
     no_country_list = []
@@ -201,6 +194,10 @@ for month in months_scrapped :
     no_abr_list = []
     multiple_winnings_same_day_list = []
     cards_ignored_list = []
+    twitter_account_list = []
+    no_competition_arobase_list = []
+    no_competition_hashtag_list = []
+
 
 
 
@@ -286,32 +283,38 @@ for month in months_scrapped :
     #----------------------EVENTS IGNORES EN ENTREE----------------------#
     # Je créé deux listes plus spécifiques contenant les éléments de la colonne A (en FR) et B (en ANG)
     FR_Ignore_event = [cell.value for cell in ignore_event_sheet['A'] if cell.value is not None]
-
+    
     #----------------------COMPETITION OF SPORT EN ENTREE----------------------#
-    #Je récupère toutes les valeurs présentes dans la feuille
-    for cell in comp_of_sport_sheet['A'][1:]:
-        # Vérifier si la cellule n'est pas vide et ajouter sa valeur à la liste
-        if cell.value is not None:
-            competition_of_sport_list.append(cell.value)
+    #De manière bête et méchante je vais ajouter dans cette liste {competition} of {sport}
+    competition_of_sport_list = [cell.value for cell in comp_of_sport_sheet['A'] if cell.value is not None]
 
-    #Je récupère toutes les valeurs présentes dans la colonne K (competition + sport)
-    for cell in comp_of_sport_sheet['B'][1:]:
-        # Vérifier si la cellule n'est pas vide et ajouter sa valeur à la liste
-        if cell.value is not None:
-            competition_of_sport_traduction.append(cell.value)
-            
+    #J'ai ici la traduction de la liste précédente pour que la traduction soit la plus exacte possible
+    competition_of_sport_traduction_list = [cell.value for cell in comp_of_sport_sheet['B'] if cell.value is not None]
+    
+    #J'ai ici l'arobase de la compétition of sport
+    competition_of_sport_arobase_list = [cell.value for cell in comp_of_sport_sheet['D'] if cell.value is not None]
+    
+    #J'ai ici l'arobase de la compétition of sport
+    competition_of_sport_hashtag_list = [cell.value for cell in comp_of_sport_sheet['E'] if cell.value is not None]
+
     #----------------------MOIS EN ENTREE----------------------#
-    #Je récupère toutes les valeurs présentes dans la colonne A
-    for cell in month_sheet['A'][1:]:
-        # Vérifier si la cellule n'est pas vide et ajouter sa valeur à la liste
-        if cell.value is not None:
-            month_fr_list.append(cell.value)
-            
-    #Je récupère toutes les valeurs présentes dans la colonne B
-    for cell in month_sheet['B'][1:]:
-        # Vérifier si la cellule n'est pas vide et ajouter sa valeur à la liste
-        if cell.value is not None:
-            month_en_list.append(cell.value)
+    #Traduction du mois afin de faciliter la création des tags produit pour WP
+    month_fr_list = [cell.value for cell in month_sheet['A'] if cell.value is not None]
+    
+    #Traduction du mois afin de faciliter la création des tags produit pour WP
+    month_en_list = [cell.value for cell in month_sheet['B'] if cell.value is not None]
+    
+    
+    #----------------------MOIS EN ENTREE----------------------#
+    #Je récupère les gagnants pour lesquels j'ai identifié qu'ils n'avaient pas de compte twitter
+    winner_without_twitter_list = [cell.value for cell in twitter_sheet['A'] if cell.value is not None]
+    
+    #Je récupère les gagnants pour lesquels j'ai identifié un compte twitter
+    winner_with_twitter_list = [cell.value for cell in twitter_sheet['B'] if cell.value is not None]
+    
+    #Je récupère leur @ Twitter
+    winner_arobase_twitter_list = [cell.value for cell in twitter_sheet['C'] if cell.value is not None]
+
 
 
     #CONCERNANT LES ELEMENTS PRESENTS DANS l'Excel du mois. IME car "IGNORE_MONTH_ELEMENTS"------------------------------------------------------------------------------
@@ -518,7 +521,7 @@ for month in months_scrapped :
                                                                 competition_of_sport = f"{sport_competition} of {sport}"
                                                                 if competition_of_sport in competition_of_sport_list:
                                                                     j = competition_of_sport_list.index(competition_of_sport)
-                                                                    competition_of_sport_traduction_value = competition_of_sport_traduction[j]
+                                                                    competition_of_sport_traduction_value = competition_of_sport_traduction_list[j]
                                                                     
                                                                     if competition_country :
                                                                         prompt_initial = f'{winner} wins the {competition_of_sport_traduction_value} in {competition_country}'
@@ -537,7 +540,8 @@ for month in months_scrapped :
                                                                     if name_NFT not in winners_with_nft_list : #La carte n'est pas encore créée. j'envoi ces données dans la liste du jour
                                                                         #Ci-dessous les éléments spécifiques à intégrer à la feuille contenant les évènements n'ayant pas encore de carte
                                                                         EVENT_SPECIFIC_COUNTER +=1
-                                                                        new_winners_one_sheet = dictionary.add_to_today_sheet(EVENT_SPECIFIC_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event, prompt_initial,actual_year,name_NFT)
+                                                                        winner_tweet = ""
+                                                                        new_winners_one_sheet = dictionary.add_to_today_sheet(EVENT_SPECIFIC_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event, prompt_initial,actual_year,name_NFT,winner_tweet)
                                                                         rename_prompt_for_midjourney(prompt_initial) #Le prompt devient le nom sous lequel j'enregistre rapidement chaque image Midjourney. J'ajoute la clé {Prompt_Midjourney} à new_winners_one_sheet
                                                                         
                                                                         #J'ai toutes les valeurs pour l'Excel, j'envoi les données du dictionnaire vers la page du jour qui contient tous les events sans cartes
@@ -605,8 +609,7 @@ for month in months_scrapped :
                                                                     pass #L'event n'est pas dans un toggle "Résultat détaillé". Je le laisse dans ma liste [events_ok_list]
                                                         else:
                                                             no_event_list.append(f"BALISE_no_event 4 : {url_event}")
-                                                            
-                    
+
                                                     #J'ai identifié les events à prendre en compte
                                                     for event_in_page_index, event_in_page in enumerate(all_events_in_page,start=1): #Je refais un for sur tous les events de la page
                                                         if event_in_page.text in events_ok_list : #Je vérifie par contre tout de suite s'il fait partie de la liste [events_ok_list] pour ne continuer qu'avec les events passés par les tamis précédents
@@ -707,7 +710,16 @@ for month in months_scrapped :
                                                                     #Je vais dans le if/else suivant ressortir le prompt_initial
                                                                     if competition_of_sport in competition_of_sport_list:
                                                                         j = competition_of_sport_list.index(competition_of_sport)
-                                                                        competition_of_sport_traduction_value = competition_of_sport_traduction[j]
+                                                                        competition_of_sport_traduction_value = competition_of_sport_traduction_list[j]
+                                                                        competition_of_sport_arobase = competition_of_sport_arobase_list[j]
+                                                                        competition_of_sport_hashtag = competition_of_sport_hashtag_list[j]
+                                                                        if competition_of_sport_arobase == "-":
+                                                                            competition_of_sport_arobase = ""
+                                                                            no_competition_arobase_list.append(competition_of_sport)
+                                                                        if competition_of_sport_hashtag == "-":
+                                                                            competition_of_sport_hashtag = ""
+                                                                            no_competition_hashtag_list.append(competition_of_sport)
+                                                                        
                                                                         if winner_country_info :
                                                                             if city == "": #J'ai l'info de la nationalité du gagnant mais pas de ville d'épreuve
                                                                                 prompt_initial = f'{winner} ({winner_country}) wins the {sport_event} {competition_of_sport_traduction_value} in {competition_country} on {date_event}'
@@ -742,7 +754,18 @@ for month in months_scrapped :
                                                                         if name_NFT not in IME_ignore_cards_list :
                                                                             #Ci-dessous les éléments spécifiques à intégrer à la feuille contenant les évènements n'ayant pas encore de carte
                                                                             EVENT_SPECIFIC_COUNTER +=1
-                                                                            new_winners_one_sheet = dictionary.add_to_today_sheet(EVENT_SPECIFIC_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event, prompt_initial, actual_year,name_NFT)
+                                                                            if winner in winner_with_twitter_list:
+                                                                                index_winner = winner_with_twitter_list.index(winner)
+                                                                                arobase_twitter = winner_arobase_twitter_list[index_winner]
+                                                                                winner_tweet=f"Congratulations to {arobase_twitter} on winning {sport_competition} {competition_of_sport_arobase} {competition_of_sport_hashtag} ! Retweet within the next 7 days to claim your winning card! Available for purchase for $1 on a first-come, first-served basis after this deadline"
+                                                                                winner_tweet.replace("   "," ")
+                                                                            elif winner in winner_without_twitter_list:
+                                                                                winner_tweet=f"Congratulations to {winner} on winning {sport_competition} {competition_of_sport_arobase} {competition_of_sport_hashtag} ! Retweet within the next 7 days to claim your winning card! Available for purchase for $1 on a first-come, first-served basis after this deadline"
+                                                                                winner_tweet.replace("   "," ")
+                                                                            else:
+                                                                                winner_tweet = ""
+                                                                                twitter_account_list.append(winner)
+                                                                            new_winners_one_sheet = dictionary.add_to_today_sheet(EVENT_SPECIFIC_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event, prompt_initial, actual_year,name_NFT,winner_tweet)
                                                                             rename_prompt_for_midjourney(prompt_initial)
                                                                             
                                                                             #J'ai toutes les valeurs pour l'Excel, j'envoi les données du dictionnaire vers la page du jour qui contient tous les events sans cartes
@@ -981,6 +1004,39 @@ for month in months_scrapped :
             print()
             for cards_ignored in cards_ignored_list :
                 print(f"{cards_ignored}")
+            print(f'---------------------------------------------------------------------------------------------------------------------------------------------------------------')
+            print()
+            print()
+            print()
+            
+        if twitter_account_list :
+            print("\033[4m" + "Je ne sais pas si ces gagnants ont un compte Twitter. Ajouter l'info en page TWITTER de la BDD INITIALE" + "\033[0m", end="")
+            print()
+            print()
+            for twitter_acount in twitter_account_list :
+                print(f"{twitter_acount}")
+            print(f'---------------------------------------------------------------------------------------------------------------------------------------------------------------')
+            print()
+            print()
+            print()
+            
+        if  no_competition_arobase_list:
+            print("\033[4m" + "Manque le @ pour le COMP OF SPORT" + "\033[0m", end="")
+            print()
+            print()
+            for no_competition_arobase in no_competition_arobase_list :
+                print(f"{no_competition_arobase}")
+            print(f'---------------------------------------------------------------------------------------------------------------------------------------------------------------')
+            print()
+            print()
+            print()
+            
+        if  no_competition_hashtag_list:
+            print("\033[4m" + "Manque le # pour le COMP OF SPORT" + "\033[0m", end="")
+            print()
+            print()
+            for no_competition_hashtag in no_competition_hashtag_list :
+                print(f"{no_competition_hashtag}")
             print(f'---------------------------------------------------------------------------------------------------------------------------------------------------------------')
             print()
             print()

@@ -173,7 +173,8 @@ for index, competition in enumerate(COMP_OF_SPORT_list) :
                 left: 50%;
                 transform: translateX(-50%);
                 color: rgb(0, 0, 0);
-                font-size: 45px;
+                font-size: 40px;
+                white-space: nowrap;
             }}
 
             .année {{

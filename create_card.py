@@ -30,7 +30,7 @@ classeur_month = openpyxl.load_workbook(chemin_excel)
 
 excel_sheet_informations = classeur_month[excel_sheet]
 #Je créé une liste avec les prompts Midjourney
-prompt_midjourney_in_excel = [cell.value for cell in excel_sheet_informations['N'] if cell.value is not None]
+prompt_midjourney_in_excel = [cell.value for cell in excel_sheet_informations['O'] if cell.value is not None]
 #Idem avec les noms des cartes
 cards_name_in_excel = [cell.value for cell in excel_sheet_informations['M'] if cell.value is not None]
 
@@ -77,10 +77,7 @@ excel_sheet = excel_month_workbook[Feuille_datas]
 nom_comp_of_sport_sheet = excel_BDD_INITIALE_workbook["COMP OF SPORT"] #Sert pour la donnée en haut de carte
 
 #Mise en place des listes contenant les données récoltées dans les feuilles Excel
-comp_of_sport_BDD_list = []
 comp_of_sport_BDD_card_list = []
-COMP_list = []
-SPORT_list = []
 PROMPT_list = []
 PROMPT_list = []
 NOM_NFT_list = []
@@ -88,46 +85,31 @@ COMP_OF_SPORT_list = []
 
 #------------------Récupération des données dans l'Excel BDD INITIALE-----------------------------------#
 #Je récupère toutes les valeurs présentes dans la colonne A de la feuille "COMP OF SPORT"
-for cell in nom_comp_of_sport_sheet['A'][1:]:
-    # Vérifier si la cellule n'est pas vide et ajouter sa valeur à la liste
-    if cell.value is not None:
-        comp_of_sport_BDD_list.append(cell.value)
+comp_of_sport_BDD_list = [cell.value for cell in nom_comp_of_sport_sheet['A'] if cell.value is not None]
         
 #Je récupère toutes les valeurs présentes dans la colonne C (traduction de comp of sport pour le haut de la carte)
-for cell in nom_comp_of_sport_sheet['C'][1:]:
-    # Vérifier si la cellule n'est pas vide et ajouter sa valeur à la liste
-    if cell.value is not None:
-        comp_of_sport_BDD_card_list.append(cell.value)
+comp_of_sport_BDD_card_list = [cell.value for cell in nom_comp_of_sport_sheet['C'] if cell.value is not None]
         
 #------------------Récupération des données dans l'Excel DU JOUR-----------------------------------#
-for cell in excel_sheet['F'][1:]: 
-    # Vérifier si la cellule n'est pas vide et ajouter sa valeur à la liste
-    if cell.value is not None:
-        COMP_list.append(cell.value)
-        
-for cell in excel_sheet['E'][1:]: 
-    # Vérifier si la cellule n'est pas vide et ajouter sa valeur à la liste
-    if cell.value is not None:
-        SPORT_list.append(cell.value)
-        
-for comp, sport in zip(COMP_list, SPORT_list):
-    COMP_OF_SPORT_list.append(f"{comp} of {sport}")
-    
-for cell in excel_sheet['L'][1:]: 
-    # Vérifier si la cellule n'est pas vide et ajouter sa valeur à la liste
-    if cell.value is not None:
-        PROMPT_list.append(cell.value)
+COMP_list = [cell.value for cell in excel_sheet['F'] if cell.value is not None]
 
-for cell in excel_sheet['M'][1:]: 
-    # Vérifier si la cellule n'est pas vide et ajouter sa valeur à la liste
-    if cell.value is not None:
-        NOM_NFT_list.append(cell.value)
-        
+SPORT_list = [cell.value for cell in excel_sheet['E'] if cell.value is not None]
 
-for index, competition in enumerate(COMP_OF_SPORT_list) :
-    comp_of_sport = competition
-    prompt = PROMPT_list[index]
-    nft_name = NOM_NFT_list[index]
+PROMPT_list = [cell.value for cell in excel_sheet['L'] if cell.value is not None]
+
+NOM_NFT_list = [cell.value for cell in excel_sheet['M'] if cell.value is not None]
+
+
+
+for index_competition, competition in enumerate(COMP_list[1:], start=1):
+    sport = SPORT_list[index_competition]
+    prompt = PROMPT_list[index_competition]
+    nft_name = NOM_NFT_list[index_competition]
+    competition_of_sport = (f"{competition} of {sport}")
+    if competition_of_sport in comp_of_sport_BDD_list:
+        second_index_competition = comp_of_sport_BDD_list.index(competition_of_sport)
+        competition_of_sport = comp_of_sport_BDD_card_list[second_index_competition]
+
     #Chemin vers les images Midjourney
     image_midjourney_path = f'/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/2024/{scrapping_month}/IMAGES_MIDJOURNEY/{nft_name}.png'
     
@@ -230,7 +212,7 @@ for index, competition in enumerate(COMP_OF_SPORT_list) :
         <div class="container">
             <div class="black-rectangle"></div>
             <div class="orange-rectangle"></div>
-            <div class="competition">{comp_of_sport}</div>
+            <div class="competition">{competition_of_sport}</div>
             <div class="année">2024</div>
             <div class="fond-prompt"></div>
             <img src="{image_midjourney_path}" alt="Image" class="image">

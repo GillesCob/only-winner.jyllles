@@ -138,6 +138,29 @@ for month in months_scrapped :
         else:
             short_winner = winner
         return short_winner
+    
+    def twitter_datas (competition_of_sport_index):
+        competition_of_sport_arobase = competition_of_sport_arobase_list[competition_of_sport_index]
+        competition_of_sport_hashtag = competition_of_sport_hashtag_list[competition_of_sport_index]
+        resultats_twitter = {}
+        
+        if competition_of_sport_arobase == "-":
+            no_competition_arobase_list.append(competition_of_sport_traduction_value)
+            resultats_twitter['arobase'] = None
+        elif competition_of_sport_arobase == "/":
+            resultats_twitter['arobase'] = ""
+        else:
+            resultats_twitter['arobase'] = competition_of_sport_arobase
+            
+        if competition_of_sport_hashtag == "-":
+            no_competition_hashtag_list.append(competition_of_sport_traduction_value)
+            resultats_twitter['hashtag'] = None
+        elif competition_of_sport_hashtag == "/":
+            resultats_twitter['hashtag'] = ""
+        else:
+            resultats_twitter['hashtag'] = competition_of_sport_hashtag
+            
+        return resultats_twitter  
 
     #----------------------VARIABLES INITIALES----------------------#
 
@@ -194,6 +217,8 @@ for month in months_scrapped :
     no_abr_list = []
     multiple_winnings_same_day_list = []
     cards_ignored_list = []
+    
+    #Listes concernant les @ et # Twitter
     twitter_account_list = []
     no_competition_arobase_list = []
     no_competition_hashtag_list = []
@@ -291,11 +316,7 @@ for month in months_scrapped :
     #J'ai ici la traduction de la liste précédente pour que la traduction soit la plus exacte possible
     competition_of_sport_traduction_list = [cell.value for cell in comp_of_sport_sheet['B'] if cell.value is not None]
     
-    #J'ai ici l'arobase de la compétition of sport
-    competition_of_sport_arobase_list = [cell.value for cell in comp_of_sport_sheet['D'] if cell.value is not None]
-    
-    #J'ai ici l'arobase de la compétition of sport
-    competition_of_sport_hashtag_list = [cell.value for cell in comp_of_sport_sheet['E'] if cell.value is not None]
+
 
     #----------------------MOIS EN ENTREE----------------------#
     #Traduction du mois afin de faciliter la création des tags produit pour WP
@@ -305,7 +326,8 @@ for month in months_scrapped :
     month_en_list = [cell.value for cell in month_sheet['B'] if cell.value is not None]
     
     
-    #----------------------MOIS EN ENTREE----------------------#
+    #----------------------DONNEES TWITTER----------------------#
+    #Concernant les gagnants -----------------------------------#
     #Je récupère les gagnants pour lesquels j'ai identifié qu'ils n'avaient pas de compte twitter
     winner_without_twitter_list = [cell.value for cell in twitter_sheet['A'] if cell.value is not None]
     
@@ -314,6 +336,20 @@ for month in months_scrapped :
     
     #Je récupère leur @ Twitter
     winner_arobase_twitter_list = [cell.value for cell in twitter_sheet['C'] if cell.value is not None]
+    
+    #Concernant les compétitions -----------------------------------#
+    #J'ai ici l'arobase de la compétition of sport
+    competition_of_sport_arobase_list = [cell.value for cell in comp_of_sport_sheet['D'] if cell.value is not None]
+    
+    #J'ai ici l'arobase de la compétition of sport
+    competition_of_sport_hashtag_list = [cell.value for cell in comp_of_sport_sheet['E'] if cell.value is not None]
+    
+    #Concernant les events -----------------------------------------#
+    #J'ai ici l'arobase des events
+    events_arobase_list = [cell.value for cell in event_sheet['C'] if cell.value is not None]
+    
+    #J'ai ici l'arobase des events
+    events_hashtag_list = [cell.value for cell in event_sheet['D'] if cell.value is not None]
 
 
 
@@ -631,6 +667,13 @@ for month in months_scrapped :
                                                                 no_event_list.append(f"BALISE_no_event 2 : {specific_event_title} - {url_event}")
                                                                 sport_event = "" #Je mets une valeur vide afin de ne pas avoir de confusion dans l'Excel
                                                                 
+                                                            # if sport_event in EN_Event :
+                                                            #     index_event = EN_Event.index(sport_event)
+                                                            #     event_arobase = events_arobase_list[index_event]
+                                                            #     event_hashtag = events_arobase_list[index_event]
+                                                            # else:
+                                                            #     event_arobase = ""
+                                                            #     event_hashtag = ""
                                     
                                                             #Je prends le titre d'event et je cherche une date présente dans ma BDD INITIALE
                                                             date_matches = [Date for Date in FR_Date if Date.lower() in specific_event_title.lower()]
@@ -639,7 +682,7 @@ for month in months_scrapped :
                                                                 index_date = FR_Date.index(Good_date)
                                                                 date_event = EN_Date[index_date] #Date a maintenant sa version traduite en anglais
                                                             else:
-                                                                no_date_event_list.append(f"BALISE_no_date 3 : {specific_event_title} - {url_event}")
+                                                                no_date_event_list.append(f"BALISE_no_date 3 : {specific_event_title} - {competition_date} {url_event}")
                                                                 
                                                             if sportsmen_table :
                                                                 solo_winner = None #Je remets à zéro au cas où
@@ -709,16 +752,11 @@ for month in months_scrapped :
                                                                     
                                                                     #Je vais dans le if/else suivant ressortir le prompt_initial
                                                                     if competition_of_sport in competition_of_sport_list:
-                                                                        j = competition_of_sport_list.index(competition_of_sport)
-                                                                        competition_of_sport_traduction_value = competition_of_sport_traduction_list[j]
-                                                                        competition_of_sport_arobase = competition_of_sport_arobase_list[j]
-                                                                        competition_of_sport_hashtag = competition_of_sport_hashtag_list[j]
-                                                                        if competition_of_sport_arobase == "-":
-                                                                            competition_of_sport_arobase = ""
-                                                                            no_competition_arobase_list.append(competition_of_sport)
-                                                                        if competition_of_sport_hashtag == "-":
-                                                                            competition_of_sport_hashtag = ""
-                                                                            no_competition_hashtag_list.append(competition_of_sport)
+                                                                        competition_of_sport_index = competition_of_sport_list.index(competition_of_sport)
+                                                                        competition_of_sport_traduction_value = competition_of_sport_traduction_list[competition_of_sport_index]
+                                                                        
+                                                                        
+                                                                        
                                                                         
                                                                         if winner_country_info :
                                                                             if city == "": #J'ai l'info de la nationalité du gagnant mais pas de ville d'épreuve
@@ -754,17 +792,26 @@ for month in months_scrapped :
                                                                         if name_NFT not in IME_ignore_cards_list :
                                                                             #Ci-dessous les éléments spécifiques à intégrer à la feuille contenant les évènements n'ayant pas encore de carte
                                                                             EVENT_SPECIFIC_COUNTER +=1
+                                                                            
+                                                                            #Je m'occupe des données relatives à Twitter
+                                                                            twitter_results = twitter_datas(competition_of_sport_index)
+                                                                            arobase_competition_value = twitter_results['arobase']
+                                                                            hashtag_competition_value = twitter_results['hashtag']
                                                                             if winner in winner_with_twitter_list:
                                                                                 index_winner = winner_with_twitter_list.index(winner)
-                                                                                arobase_twitter = winner_arobase_twitter_list[index_winner]
-                                                                                winner_tweet=f"Congratulations to {arobase_twitter} on winning {sport_competition} {competition_of_sport_arobase} {competition_of_sport_hashtag} ! Retweet within the next 7 days to claim your winning card! Available for purchase for $1 on a first-come, first-served basis after this deadline"
-                                                                                winner_tweet.replace("   "," ")
+                                                                                winner_for_twitter = winner_arobase_twitter_list[index_winner]
                                                                             elif winner in winner_without_twitter_list:
-                                                                                winner_tweet=f"Congratulations to {winner} on winning {sport_competition} {competition_of_sport_arobase} {competition_of_sport_hashtag} ! Retweet within the next 7 days to claim your winning card! Available for purchase for $1 on a first-come, first-served basis after this deadline"
-                                                                                winner_tweet.replace("   "," ")
+                                                                                winner_for_twitter_list = winner.split(",")
+                                                                                winner_for_twitter_list = ["#" + winner.replace(" ", "") for winner in winner_for_twitter_list]
+                                                                                winner_for_twitter = ", ".join(winner_for_twitter_list)
+
+                                                                                
                                                                             else:
-                                                                                winner_tweet = ""
+                                                                                winner_for_twitter = ""
                                                                                 twitter_account_list.append(winner)
+                                                                                
+                                                                            winner_tweet=f"Congratulations to {winner_for_twitter} on winning {sport_event} {competition_of_sport_traduction_value}! Retweet within the next 7 days to claim your winning card! Available for purchase for $1 on a first-come, first-served basis after this deadline {arobase_competition_value} {hashtag_competition_value}"
+                                                                            
                                                                             new_winners_one_sheet = dictionary.add_to_today_sheet(EVENT_SPECIFIC_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event, prompt_initial, actual_year,name_NFT,winner_tweet)
                                                                             rename_prompt_for_midjourney(prompt_initial)
                                                                             
@@ -800,7 +847,7 @@ for month in months_scrapped :
                                                                 elif date_number_int < actual_day :
                                                                     winner = None
                                                                     #La date de l'event est antérieur à la date du scrapping. Potentiel soucis. J'ajoute l'info dans le print final et m'arrête là dans les recherches
-                                                                    no_winner_list.append(f"BALISE_no_winner 1 : {url_event}")
+                                                                    no_winner_list.append(f"BALISE_no_winner 1 : {competition_date} - {url_event}")
                                                                 else :
                                                                     no_date_event_list.append(f"BALISE_no_date 1 : {url_event}") #J'ai peut-être un soucis avec le if et elif. Pas de winner et soucis de date ? A checker
                                                                     
@@ -811,7 +858,7 @@ for month in months_scrapped :
                                                     time.sleep(pause)   
 
                                                 else:
-                                                    no_event_probably_empty_list.append(f"BALISE_no_event 1 : {url_event}") #J'ai une page d'event mais pas de gagnant ni présent dans h3, no margin ou center
+                                                    no_event_probably_empty_list.append(f"BALISE_no_event 1 : {competition_date} - {url_event}") #J'ai une page d'event mais pas de gagnant ni présent dans h3, no margin ou center
                                             else:
                                                 print(f"Pas de retour de l'url. Status code = {result.status_code}")
 
@@ -1012,6 +1059,7 @@ for month in months_scrapped :
         if twitter_account_list :
             print("\033[4m" + "Je ne sais pas si ces gagnants ont un compte Twitter. Ajouter l'info en page TWITTER de la BDD INITIALE" + "\033[0m", end="")
             print()
+            print("\033[4m" +"Le Tweet n'est PAS utilisable, pas de gagnant nommé !" + "\033[0m", end="")
             print()
             for twitter_acount in twitter_account_list :
                 print(f"{twitter_acount}")
@@ -1021,7 +1069,7 @@ for month in months_scrapped :
             print()
             
         if  no_competition_arobase_list:
-            print("\033[4m" + "Manque le @ pour le COMP OF SPORT" + "\033[0m", end="")
+            print("\033[4m" + "Manque le @ Twitter pour ces COMP OF SPORT" + "\033[0m", end="")
             print()
             print()
             for no_competition_arobase in no_competition_arobase_list :
@@ -1032,7 +1080,7 @@ for month in months_scrapped :
             print()
             
         if  no_competition_hashtag_list:
-            print("\033[4m" + "Manque le # pour le COMP OF SPORT" + "\033[0m", end="")
+            print("\033[4m" + "Manque le # Twitter pour ces COMP OF SPORT" + "\033[0m", end="")
             print()
             print()
             for no_competition_hashtag in no_competition_hashtag_list :

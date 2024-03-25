@@ -11,9 +11,15 @@ import re
 
 import os
 
+import json
+
+
 #Seule variable à changer, mois à scrapper en français
 #months_scrapped = ["Janvier", "Février"]
-months_scrapped = ['Mars']
+months_scrapped = ['Février']
+webhook_url = 'https://discord.com/api/webhooks/1220361004479676456/ERaQqkUNyJgoJhYxpPRBznTX6LpF0M4as3E7IMuOa5Qhj7LrOuJoTyJ0v6RxqqMW-7sh'
+
+
 
 for month in months_scrapped :
     scrapping_month = month
@@ -84,6 +90,7 @@ for month in months_scrapped :
         prompt_midjourney = prompt_midjourney.replace("å", "a")
         prompt_midjourney = prompt_midjourney.replace("ä", "a")
         prompt_midjourney = prompt_midjourney.replace("ß", "")
+        prompt_midjourney = prompt_midjourney.replace("ñ", "n")
         prompt_midjourney = prompt_midjourney.replace("+", "")
         prompt_midjourney = "jyllles_" + prompt_midjourney
         prompt_midjourney = prompt_midjourney[:60]
@@ -139,9 +146,10 @@ for month in months_scrapped :
             short_winner = winner
         return short_winner
     
-    def twitter_datas (competition_of_sport_index):
+    def twitter_datas (competition_of_sport_index, winner):
         competition_of_sport_arobase = competition_of_sport_arobase_list[competition_of_sport_index]
         competition_of_sport_hashtag = competition_of_sport_hashtag_list[competition_of_sport_index]
+        
         resultats_twitter = {}
         
         if competition_of_sport_arobase == "-":
@@ -160,6 +168,17 @@ for month in months_scrapped :
         else:
             resultats_twitter['hashtag'] = competition_of_sport_hashtag
             
+        if winner in winner_twitter_list:
+            winner_twitter_index = winner_twitter_list.index(winner)
+            resultats_twitter['winner_account'] = winner_arobase_twitter_list[winner_twitter_index]
+            if resultats_twitter['winner_account'] == "-" :
+                winner_for_twitter_list = winner.split(",")
+                winner_for_twitter_list = ["#" + winner.replace(" ", "") for winner in winner_for_twitter_list]
+                resultats_twitter['winner_account'] = ", ".join(winner_for_twitter_list)
+        else:
+            resultats_twitter['winner_account'] = ""
+            twitter_account_list.append(winner)
+
         return resultats_twitter  
 
     #----------------------VARIABLES INITIALES----------------------#
@@ -222,6 +241,9 @@ for month in months_scrapped :
     twitter_account_list = []
     no_competition_arobase_list = []
     no_competition_hashtag_list = []
+    
+    #Liste pour Discord
+    discord_prompt_list = []
 
 
 
@@ -328,14 +350,12 @@ for month in months_scrapped :
     
     #----------------------DONNEES TWITTER----------------------#
     #Concernant les gagnants -----------------------------------#
-    #Je récupère les gagnants pour lesquels j'ai identifié qu'ils n'avaient pas de compte twitter
-    winner_without_twitter_list = [cell.value for cell in twitter_sheet['A'] if cell.value is not None]
+    #Je récupère les gagnants
+    winner_twitter_list = [cell.value for cell in twitter_sheet['A'] if cell.value is not None]
     
-    #Je récupère les gagnants pour lesquels j'ai identifié un compte twitter
-    winner_with_twitter_list = [cell.value for cell in twitter_sheet['B'] if cell.value is not None]
+    #Je récupère les comptes Twitter
+    winner_arobase_twitter_list = [cell.value for cell in twitter_sheet['B'] if cell.value is not None]
     
-    #Je récupère leur @ Twitter
-    winner_arobase_twitter_list = [cell.value for cell in twitter_sheet['C'] if cell.value is not None]
     
     #Concernant les compétitions -----------------------------------#
     #J'ai ici l'arobase de la compétition of sport
@@ -363,7 +383,9 @@ for month in months_scrapped :
     IME_no_event_probably_empty_list = [cell.value for cell in ignore_month_elements_sheet['G'] if cell.value is not None]
     IME_no_date_event_list = [cell.value for cell in ignore_month_elements_sheet['H'] if cell.value is not None]
     IME_multiple_winnings_same_day_list = [cell.value for cell in ignore_month_elements_sheet['I'] if cell.value is not None]
-    IME_ignore_cards_list = [cell.value for cell in ignore_month_elements_sheet['J'] if cell.value is not None]
+    IME_no_winner_list = [cell.value for cell in ignore_month_elements_sheet['J'] if cell.value is not None]
+
+    IME_ignore_cards_list = [cell.value for cell in ignore_month_elements_sheet['K'] if cell.value is not None]
 
 
     if scrapping_month in month_fr_list:
@@ -794,23 +816,13 @@ for month in months_scrapped :
                                                                             EVENT_SPECIFIC_COUNTER +=1
                                                                             
                                                                             #Je m'occupe des données relatives à Twitter
-                                                                            twitter_results = twitter_datas(competition_of_sport_index)
+                                                                            twitter_results = twitter_datas(competition_of_sport_index, winner)
                                                                             arobase_competition_value = twitter_results['arobase']
                                                                             hashtag_competition_value = twitter_results['hashtag']
-                                                                            if winner in winner_with_twitter_list:
-                                                                                index_winner = winner_with_twitter_list.index(winner)
-                                                                                winner_for_twitter = winner_arobase_twitter_list[index_winner]
-                                                                            elif winner in winner_without_twitter_list:
-                                                                                winner_for_twitter_list = winner.split(",")
-                                                                                winner_for_twitter_list = ["#" + winner.replace(" ", "") for winner in winner_for_twitter_list]
-                                                                                winner_for_twitter = ", ".join(winner_for_twitter_list)
-
-                                                                                
-                                                                            else:
-                                                                                winner_for_twitter = ""
-                                                                                twitter_account_list.append(winner)
-                                                                                
-                                                                            winner_tweet=f"Congratulations to {winner_for_twitter} on winning {sport_event} {competition_of_sport_traduction_value}! Retweet within the next 7 days to claim your winning card! Available for purchase for $1 on a first-come, first-served basis after this deadline {arobase_competition_value} {hashtag_competition_value}"
+                                                                            winner_twitter_account = twitter_results['winner_account']
+                                                                            
+                                                                            winner_tweet=f"Congratulations to {winner_twitter_account} on winning {sport_event} {competition_of_sport_traduction_value}! Retweet within the next 7 days to claim your winning card!{arobase_competition_value} {hashtag_competition_value}"
+                                                                            winner_tweet = winner_tweet.replace("None","")
                                                                             
                                                                             new_winners_one_sheet = dictionary.add_to_today_sheet(EVENT_SPECIFIC_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event, prompt_initial, actual_year,name_NFT,winner_tweet)
                                                                             rename_prompt_for_midjourney(prompt_initial)
@@ -1014,7 +1026,10 @@ for month in months_scrapped :
             print()
             print()
             for no_winner in no_winner_list:
-                print(f"{no_winner}")
+                if no_winner in IME_no_winner_list:
+                    pass
+                else:
+                    print(f"{no_winner}")
             print(f'---------------------------------------------------------------------------------------------------------------------------------------------------------------')
             print()
             print()
@@ -1100,11 +1115,13 @@ for month in months_scrapped :
                 if tour < 14:
                     print()
                     print(f"{winner_without_nft_list['Prompt']} {midjourney_parameters}")
+                    #discord_prompt_list.append(f"{winner_without_nft_list['Prompt']} {midjourney_parameters}")
                     tour +=1
                     new_prompts +=1
                 else:
                     print()
                     print(f"{winner_without_nft_list['Prompt']} {midjourney_parameters}")
+                    #discord_prompt_list.append(f"{winner_without_nft_list['Prompt']} {midjourney_parameters}")
                     tour=0
                     new_prompts +=1
                     print()
@@ -1114,8 +1131,16 @@ for month in months_scrapped :
             print(f"Nous avons {new_prompts} nouveaux prompts")
             print(f'--------------------------------------------------')
             print()
+        
+        for discord_prompt in discord_prompt_list:
+            # Créez le message à envoyer
+            message = {
+                'content': discord_prompt
+            }
+            # Envoyez le message au webhook Discord
+            response = requests.post(webhook_url, data=json.dumps(message), headers={'Content-Type': 'application/json'})
 
-    #Création de l'Excel
+    #Création de l'Excel   
         actual_day = str(actual_day)
         # Créer un DataFrame pandas à partir de la liste d'événements
         df1 = pd.DataFrame(all_month_winners_list)

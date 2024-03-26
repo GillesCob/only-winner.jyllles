@@ -16,7 +16,7 @@ import json
 
 #Seule variable à changer, mois à scrapper en français
 #months_scrapped = ["Janvier", "Février"]
-months_scrapped = ['Février']
+months_scrapped = ['Mars']
 webhook_url = 'https://discord.com/api/webhooks/1220361004479676456/ERaQqkUNyJgoJhYxpPRBznTX6LpF0M4as3E7IMuOa5Qhj7LrOuJoTyJ0v6RxqqMW-7sh'
 
 

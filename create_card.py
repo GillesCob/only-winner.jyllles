@@ -12,8 +12,10 @@ from openpyxl import load_workbook
 #Attention à bien mettre à jour le mois concerné !
 
 scrapping_month = "Mars"
-actual_day = int(datetime.now().day)
+actual_day=31
+#actual_day = int(datetime.now().day)
 excel_sheet = str(actual_day)
+occurences=0
 
 
 # Chemin vers le fichier Excel
@@ -50,9 +52,13 @@ for nom_fichier in os.listdir(dossier_images):
             prompt_midjourney_in_excel.pop(index_prompt)
             cards_name_in_excel.pop(index_prompt)
             print(f"Nom changé de {nom_fichier} en {nouveau_nom}")
+            occurences +=1
         else :
             print(f"{nom_fichier} n'est pas dans les prompts Midjourney fournis dans l'excel")
+            
+print(f"{occurences} images renommées et prêtes pour la génération de cartes")
 
+occurences = 0
 
 
 
@@ -60,8 +66,8 @@ hti = Html2Image(size=(1000,1500))
 
 #Données de départ
 scrapping_month = "Mars"
-actual_day = str(datetime.now().day)
-Feuille_datas = str(actual_day)
+actual_day_str = str(actual_day)
+Feuille_datas = actual_day_str
 
 #Chemins vers mes 2 fichiers excel
 excel_data_file_path = f'/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/2024/{scrapping_month}/EXCEL/DATAS.xlsx'
@@ -224,10 +230,13 @@ for index_competition, competition in enumerate(COMP_list[1:], start=1):
     
     # Chemin vers le dossier de sauvegarde (fichier général + fichier du jour pour faciliter l'import des images sur WP)
     save_folder_paths = [f"/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/2024/{scrapping_month}/NFT_READY", f"/Users/gillescobigo/Documents/Gilles/Dev/Only Winners/DATAS/2024/{scrapping_month}/NFT_READY/IMPORT WP/{actual_day} {scrapping_month}"]
-    
+    occurences +=1
     for save_folder_path in save_folder_paths :
         # Définir le dossier de sortie
         hti.output_path = save_folder_path
 
         # Prendre une capture d'écran avec le HTML généré pour la compétition actuelle
         hti.screenshot(html_str=html_template, save_as=f'{nft_name}.png')
+        
+        
+print(f"{occurences} cartes générées")

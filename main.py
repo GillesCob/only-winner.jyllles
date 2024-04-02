@@ -15,8 +15,9 @@ import json
 
 
 #Seule variable à changer, mois à scrapper en français
-#months_scrapped = ["Janvier", "Février"]
-months_scrapped = ['Mars']
+months_scrapped = ["Avril"]
+#months_scrapped = ['Janvier', 'Février', 'Mars']
+
 webhook_url = 'https://discord.com/api/webhooks/1220361004479676456/ERaQqkUNyJgoJhYxpPRBznTX6LpF0M4as3E7IMuOa5Qhj7LrOuJoTyJ0v6RxqqMW-7sh'
 
 
@@ -24,47 +25,8 @@ webhook_url = 'https://discord.com/api/webhooks/1220361004479676456/ERaQqkUNyJgo
 for month in months_scrapped :
     scrapping_month = month
     actual_day = int(datetime.now().day)
-    verif_date_event = actual_day-13
-    jours_depuis_dernier_scrapping = 1 #Mettre 1 si scrapping fait hier, ...
-    date_dernier_scrapping = actual_day - jours_depuis_dernier_scrapping
+    verif_date_event = actual_day
     date_event = "March 1st"
-
-
-    #-------------------------------PREREQUIS-------------------------------#
-    #Copier/coller le dossier "Mois_a_copier" et le nommer avec le mois en cours
-
-    #-------------------------------GESTION DU SCRAPPING-------------------------------#
-    #1er lancement main.py
-    #Modifier Mois
-
-    #Prendre en compte l'ensemble des remarques (épreuves à traduire, abréviations pays à ajouter, ...) et les modifier dans l'Excel natif
-    #Relancer autant de fois qu'il le faudra pour que les erreurs soient validées
-    #Création d'un excel "mois-2024.xlsx" dans le dossier Excels
-
-
-
-
-
-    #-------------------------------GESTION DES IMAGES-------------------------------#
-    #Créer le prompt Midjourney dans le Dashboard (suivre les instructions dans l'excel)
-    #Réaliser les images via Midjourney et les sauvegarder dans le dossier "Download"
-    #Lancer ren_first_rename.py => Va transformer la syntaxe Midjourney en Prompt présents dans l'excel
-    #Déplacement auto des images renommées dans le dossier Images du mois scrappé (LES COMPTER)
-    #GARDE-FOU iMAGES ---------------------------
-    #Les images ayant un titre trop proche ne sont pas renommés => A traiter à la main
-    #Si commentaire pour l'event (cf étape à la fin du scrapping) alors image non renommée => A traiter à la main
-
-    #-------------------------------GESTION DU PPT-------------------------------#
-    #Dans le ppt "cartes_sans_images.pptx" créer autant de slides qu'on a d'events dans le l'excel (prendre le n° dans la colonne A)
-    #Lancer excel_to_ppt.py
-    #Création automatique du PPT "cartes_avec_images.pptx"
-    #Ouvrir ce nouveau PPT
-    #Vérifier la bonne correspondance entre image et prompt
-    #Vérifier si les épreuves nationales sont masculines ou féminines (refaire l'image si besoin)
-
-    #-------------------------------CREATION DES IMAGES FINALES-------------------------------#
-    #Exporter toutes les slides en .png dans le dossier "PNG_DIAPO"
-    #Lancer ren_second_rename.py qui va transformer le nom "Diapositive1" en Prompt présents dans l'excel
 
 
     #------------------------------------------------------------------------------------------------------------------------------------#
@@ -74,6 +36,7 @@ for month in months_scrapped :
     def rename_prompt_for_midjourney(name_NFT): #Modification du prompt pour correspondre au titre automatique lors de l'enregistrement d'une image Midjourney
         prompt_midjourney = name_NFT
         prompt_midjourney = prompt_midjourney.replace(" ", "_")
+        prompt_midjourney = prompt_midjourney.replace("-", "")
         prompt_midjourney = prompt_midjourney.replace(",", "")
         prompt_midjourney = prompt_midjourney.replace("'", "")
         prompt_midjourney = prompt_midjourney.replace("(", "")
@@ -236,6 +199,7 @@ for month in months_scrapped :
     no_abr_list = []
     multiple_winnings_same_day_list = []
     cards_ignored_list = []
+    mixed_event_list = []
     
     #Listes concernant les @ et # Twitter
     twitter_account_list = []
@@ -384,6 +348,8 @@ for month in months_scrapped :
     IME_no_date_event_list = [cell.value for cell in ignore_month_elements_sheet['H'] if cell.value is not None]
     IME_multiple_winnings_same_day_list = [cell.value for cell in ignore_month_elements_sheet['I'] if cell.value is not None]
     IME_no_winner_list = [cell.value for cell in ignore_month_elements_sheet['J'] if cell.value is not None]
+    IME_mixed_event_list = [cell.value for cell in ignore_month_elements_sheet['M'] if cell.value is not None]
+
 
     IME_ignore_cards_list = [cell.value for cell in ignore_month_elements_sheet['K'] if cell.value is not None]
 
@@ -531,13 +497,19 @@ for month in months_scrapped :
                                         url_event_hommes = sport_event_link_text
                                         url_event_femmes = sport_event_link_text.replace("hommes-epm", "femmes-epf")
                                         url_event_mixte = sport_event_link_text.replace("hommes-epm", "mixte-epi")
+                                        mixte_event = True
                                     else:
                                         url_event_hommes = sport_event_link_text
                                         url_event_femmes = ""
                                         url_event_mixte = ""
+                                        mixte_event = False
                                     urls_event_list = [url_event_hommes, url_event_femmes, url_event_mixte]
                                     
                                     for url_event in urls_event_list :
+                                        if "mixte-epi" in url_event :
+                                            mixte_event = True
+                                        else :
+                                            mixte_event = False
                                         if url_event != None and url_event != "" :
                                             event_detail = requests.get(url_event)
 
@@ -680,6 +652,7 @@ for month in months_scrapped :
                                                                 Good_event = max(event_matches, key=len) #Je prends la plus longue correspondance s'il y en a plusieurs
                                                                 index_event = FR_Event.index(Good_event)
                                                                 sport_event = EN_Event[index_event] #sport_event a maintenant sa version traduite en anglais
+                                              
                                                                 
                                                                 if len(Good_event) == 2: #J'ai créé 1 event "ho" et 1 event "fe" (donc si ==2 c'est qu'on a que homme ou femme comme info pour l'event ou bien que l'event n'est pas traduit)
                                                                     just_men_woman_list.append(f"BALISE_no_event 3 : {specific_event_title} - {url_event}") #Je permets de voir rapidement dans le print final si je n'ai que Homme/Femme comme info pour l'event
@@ -724,7 +697,7 @@ for month in months_scrapped :
                                                                     date_number = re.search(r'\d+', date_event)
                                                                     date_number_int = int(date_number.group())
                                                                     if date_number_int > verif_date_event :
-                                                                        #La date de l'event est supérieur à la date de vérif. Je ne print rien. Il y a un tableay sans gagnant mais normal de ne pas avoir de gagnant donc...
+                                                                        #La date de l'event est supérieur à la date de vérif. Je ne print rien. Il y a un tableau sans gagnant mais normal de ne pas avoir de gagnant donc...
                                                                         winner = None
                                                                     elif date_number_int < verif_date_event :
                                                                         winner = None
@@ -779,7 +752,6 @@ for month in months_scrapped :
                                                                         
                                                                         
                                                                         
-                                                                        
                                                                         if winner_country_info :
                                                                             if city == "": #J'ai l'info de la nationalité du gagnant mais pas de ville d'épreuve
                                                                                 prompt_initial = f'{winner} ({winner_country}) wins the {sport_event} {competition_of_sport_traduction_value} in {competition_country} on {date_event}'
@@ -795,7 +767,11 @@ for month in months_scrapped :
                                                                         no_competition_of_sport_list.append(f'{sport_competition} of {sport} - {url_event}')
                                                                         
                                                                     prompt_initial = prompt_initial.replace("  ", " ") #J'ai des cas où je n'ai pas d'event (tennis par ex ou je n'arrive pas à distinguer si ATP ou WTA). Je transforme le double espace en simple
-
+                                                                    
+                                                                    if mixte_event == True :
+                                                                        mixed_event_list.append(sport_event) #Je vérifie si la mixité de l'épreuve est bien dans l'event
+                                                                        
+                                                                        
                                                                     #J'ai le prompt_initial et toutes les infos, je créé le nom de la carte et j'ajoute les données à l'Excel
                                                                     winner_len = len(winner)
                                                                     name_NFT = f"{winner_len}-{sport}-{sport_competition}-{sport_event}-{date_event}-{actual_year}"
@@ -821,7 +797,7 @@ for month in months_scrapped :
                                                                             hashtag_competition_value = twitter_results['hashtag']
                                                                             winner_twitter_account = twitter_results['winner_account']
                                                                             
-                                                                            winner_tweet=f"Congratulations to {winner_twitter_account} on winning {sport_event} {competition_of_sport_traduction_value}! Retweet within the next 7 days to claim your winning card!{arobase_competition_value} {hashtag_competition_value}"
+                                                                            winner_tweet=f"Hey {winner_twitter_account}, don't forget to retweet us to get your free winning card !!{arobase_competition_value} {hashtag_competition_value}"
                                                                             winner_tweet = winner_tweet.replace("None","")
                                                                             
                                                                             new_winners_one_sheet = dictionary.add_to_today_sheet(EVENT_SPECIFIC_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event, prompt_initial, actual_year,name_NFT,winner_tweet)
@@ -888,7 +864,7 @@ for month in months_scrapped :
 
     #J'imprime en fin de scrapping toutes les erreures ensembles par catégorie afin de faciliter la lecture
         print()
-        print(f"ERREURS IDENTIFIEES EN {scrapping_month}")
+        print(f"Erreurs identifiées en {scrapping_month}")
         print()
         print()
         print()
@@ -1022,7 +998,7 @@ for month in months_scrapped :
             print()
             
         if no_winner_list :
-            print("\033[4m" +"Manque un gagnant dans les events suivants :" + "\033[0m", end="")
+            print("\033[4m" +"Manque un gagnant dans les events suivants. Ajouter les lignes à ignorer en colonne J de IME" + "\033[0m", end="")
             print()
             print()
             for no_winner in no_winner_list:
@@ -1100,6 +1076,20 @@ for month in months_scrapped :
             print()
             for no_competition_hashtag in no_competition_hashtag_list :
                 print(f"{no_competition_hashtag}")
+            print(f'---------------------------------------------------------------------------------------------------------------------------------------------------------------')
+            print()
+            print()
+            print()
+            
+        if  mixed_event_list:
+            print("\033[4m" + "Epreuve mixte. Vérifier si le prompt en tient compte" + "\033[0m", end="")
+            print()
+            print()
+            for mixed_event in mixed_event_list :
+                if mixed_event in IME_mixed_event_list:
+                    pass
+                else:
+                    print(f"{mixed_event}")
             print(f'---------------------------------------------------------------------------------------------------------------------------------------------------------------')
             print()
             print()

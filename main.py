@@ -25,6 +25,7 @@ webhook_url = 'https://discord.com/api/webhooks/1220361004479676456/ERaQqkUNyJgo
 for month in months_scrapped :
     scrapping_month = month
     actual_day = int(datetime.now().day)
+    #actual_day = 31
     verif_date_event = actual_day
     date_event = "March 1st"
 
@@ -208,9 +209,6 @@ for month in months_scrapped :
     
     #Liste pour Discord
     discord_prompt_list = []
-
-
-
 
     #----------------------VERIFS EXCEL----------------------#
     #1 - Est-ce que le fichier Excel existe ?
@@ -763,6 +761,7 @@ for month in months_scrapped :
                                                                             else: #Je n'ai pas l'info de la nationalité du gagnant mais j'ai la ville d'épreuve
                                                                                 prompt_initial = f'{winner} wins the {sport_event} {competition_of_sport_traduction_value} in {city}, {competition_country} on {date_event}'
                                                                     else:
+                                                                        competition_of_sport_index = 0
                                                                         prompt_initial = 'Pas de prompt' #Je dois avoir une formulation de prompt nickel
                                                                         no_competition_of_sport_list.append(f'{sport_competition} of {sport} - {url_event}')
                                                                         

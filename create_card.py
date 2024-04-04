@@ -11,9 +11,9 @@ from openpyxl import load_workbook
 #Va transformer la syntaxe Midjourney en Prompt présents dans l'excel
 #Attention à bien mettre à jour le mois concerné !
 
-scrapping_month = "Mars"
-actual_day=31
-#actual_day = int(datetime.now().day)
+scrapping_month = "Avril"
+#actual_day=31
+actual_day = int(datetime.now().day)
 excel_sheet = str(actual_day)
 occurences=0
 
@@ -65,7 +65,6 @@ occurences = 0
 hti = Html2Image(size=(1000,1500))
 
 #Données de départ
-scrapping_month = "Mars"
 actual_day_str = str(actual_day)
 Feuille_datas = actual_day_str
 

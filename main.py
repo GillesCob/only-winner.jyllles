@@ -796,7 +796,7 @@ for month in months_scrapped :
                                                                             hashtag_competition_value = twitter_results['hashtag']
                                                                             winner_twitter_account = twitter_results['winner_account']
                                                                             
-                                                                            winner_tweet=f"Hey {winner_twitter_account}, don't forget to retweet us to get your free winning card !!{arobase_competition_value} {hashtag_competition_value}"
+                                                                            winner_tweet=f"Hey {winner_twitter_account}, don't forget to retweet us to get your free winning card !! {arobase_competition_value} {hashtag_competition_value}. 1$ for everyone else !"
                                                                             winner_tweet = winner_tweet.replace("None","")
                                                                             
                                                                             new_winners_one_sheet = dictionary.add_to_today_sheet(EVENT_SPECIFIC_COUNTER,competition_date,competition_country,city,sport,sport_competition,sport_event,date_event,winner,winner_country,url_event, prompt_initial, actual_year,name_NFT,winner_tweet)
@@ -863,7 +863,7 @@ for month in months_scrapped :
 
     #J'imprime en fin de scrapping toutes les erreures ensembles par catégorie afin de faciliter la lecture
         print()
-        print(f"Erreurs identifiées en {scrapping_month}")
+        print(f"Informations pour le mois d'{scrapping_month}")
         print()
         print()
         print()

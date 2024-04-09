@@ -447,6 +447,9 @@ for month in months_scrapped :
                                         else:
                                             no_city_list.append(f"{competition_city_first_chance} ou {competition_city_second_chance}")
                                             city = "" #Possible qu'on ait juste pas de ville. Je mets une valeur vide mais mets quand même une alerte pour la fin
+                                            
+                                        if city == "-":
+                                            city = ""
                                     else:
                                         print("Aucune chance d'arriver ici. Pas de valeur dans la 2ème ou 3ème colonne du tableau principal")
 

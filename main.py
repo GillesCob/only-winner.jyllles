@@ -866,7 +866,7 @@ for month in months_scrapped :
 
     #J'imprime en fin de scrapping toutes les erreures ensembles par catégorie afin de faciliter la lecture
         print()
-        print(f"Informations pour le mois d'{scrapping_month}")
+        print(f"Informations pour le {actual_day} {scrapping_month}")
         print()
         print()
         print()
@@ -888,6 +888,7 @@ for month in months_scrapped :
             
         if no_city_list :
             print("\033[4m" + 'Manque les villes suivantes dans CITY. Ajouter les lignes à ignorer en colonne B de IME' + "\033[0m", end="")
+            print()
             print()
             for no_city in no_city_list:
                 no_city = no_city.strip()
@@ -958,7 +959,7 @@ for month in months_scrapped :
             print()
             
         if just_men_woman_list :
-            print("\033[4m" +"Probablement que HOMME/FEMME dans l'event. Ajouter infos en Col E de IME. Ajouter les lignes à ignorer en colonne F de IME" + "\033[0m", end="")
+            print("\033[4m" +"Probablement que HOMME/FEMME dans l'event. Ajouter infos dans 'EVENT'. Ajouter les lignes à ignorer en colonne F de IME" + "\033[0m", end="")
             print()
             print()
             for just_men_woman in just_men_woman_list:

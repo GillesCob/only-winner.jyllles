@@ -50,6 +50,7 @@ for month in months_scrapped :
         prompt_midjourney = prompt_midjourney.replace("è", "e")
         prompt_midjourney = prompt_midjourney.replace("í", "i")
         prompt_midjourney = prompt_midjourney.replace("ï", "i")
+        prompt_midjourney = prompt_midjourney.replace("î", "i")
         prompt_midjourney = prompt_midjourney.replace("á", "a")
         prompt_midjourney = prompt_midjourney.replace("å", "a")
         prompt_midjourney = prompt_midjourney.replace("ä", "a")

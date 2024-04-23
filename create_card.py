@@ -42,7 +42,8 @@ for nom_fichier in os.listdir(dossier_images):
 
     # Vérifier si le fichier est un fichier PNG
     if nom_fichier.lower().endswith(".png"):
-        nom_fichier = nom_fichier[:60]
+        nom_fichier = nom_fichier.replace("-","") #Nouveau éléments ajoutés pour éviter les erreurs de nommage quand "-" dans le nom de l'athlète
+        nom_fichier = nom_fichier[:55]
         if nom_fichier in prompt_midjourney_in_excel:
             index_prompt = prompt_midjourney_in_excel.index(nom_fichier)
             nouveau_nom = cards_name_in_excel[index_prompt]

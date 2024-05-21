@@ -15,7 +15,7 @@ import json
 
 
 #Seule variable à changer, mois à scrapper en français
-months_scrapped = ["Avril"]
+months_scrapped = ["Mai"]
 #months_scrapped = ['Janvier', 'Février', 'Mars']
 
 webhook_url = 'https://discord.com/api/webhooks/1220361004479676456/ERaQqkUNyJgoJhYxpPRBznTX6LpF0M4as3E7IMuOa5Qhj7LrOuJoTyJ0v6RxqqMW-7sh'
@@ -23,9 +23,10 @@ webhook_url = 'https://discord.com/api/webhooks/1220361004479676456/ERaQqkUNyJgo
 
 
 for month in months_scrapped :
+    scrapping_month = "Mai"
     scrapping_month = month
     actual_day = int(datetime.now().day)
-    #actual_day = 31
+    #actual_day = 32
     verif_date_event = actual_day
     date_event = "March 1st"
 
@@ -54,6 +55,7 @@ for month in months_scrapped :
         prompt_midjourney = prompt_midjourney.replace("á", "a")
         prompt_midjourney = prompt_midjourney.replace("å", "a")
         prompt_midjourney = prompt_midjourney.replace("ä", "a")
+        prompt_midjourney = prompt_midjourney.replace("Á", "a")
         prompt_midjourney = prompt_midjourney.replace("ß", "")
         prompt_midjourney = prompt_midjourney.replace("ñ", "n")
         prompt_midjourney = prompt_midjourney.replace("+", "")
@@ -466,7 +468,7 @@ for month in months_scrapped :
                                                 sport = Good_sport_eng.strip()
                                         else:
                                             no_sport_list.append(sport)
-                                            sport = None
+                                            sport = "None"
                                     else:
                                         print("Aucune chance d'arriver ici. Pas de valeur dans la 3ème colonne du tableau principal")
 
@@ -657,7 +659,7 @@ for month in months_scrapped :
                                               
                                                                 
                                                                 if len(Good_event) == 2: #J'ai créé 1 event "ho" et 1 event "fe" (donc si ==2 c'est qu'on a que homme ou femme comme info pour l'event ou bien que l'event n'est pas traduit)
-                                                                    just_men_woman_list.append(f"BALISE_no_event 3 : {specific_event_title} - {url_event}") #Je permets de voir rapidement dans le print final si je n'ai que Homme/Femme comme info pour l'event
+                                                                    just_men_woman_list.append(f"{specific_event_title}") #Je permets de voir rapidement dans le print final si je n'ai que Homme/Femme comme info pour l'event
                                                             
                                                             else: #L'épreuve ne fait pas partie de ma BDD INITIALE.
                                                                 events_ok_list.remove(specific_event_title) #Je retire cet event de la liste des events ok, il devra être traduit si on veut son ajout dans l'Excel
@@ -772,7 +774,7 @@ for month in months_scrapped :
                                                                     prompt_initial = prompt_initial.replace("  ", " ") #J'ai des cas où je n'ai pas d'event (tennis par ex ou je n'arrive pas à distinguer si ATP ou WTA). Je transforme le double espace en simple
                                                                     
                                                                     if mixte_event == True :
-                                                                        mixed_event_list.append(sport_event) #Je vérifie si la mixité de l'épreuve est bien dans l'event
+                                                                        mixed_event_list.append(f'{sport_event} - {url_event}') #Je vérifie si la mixité de l'épreuve est bien dans l'event
                                                                         
                                                                         
                                                                     #J'ai le prompt_initial et toutes les infos, je créé le nom de la carte et j'ajoute les données à l'Excel
